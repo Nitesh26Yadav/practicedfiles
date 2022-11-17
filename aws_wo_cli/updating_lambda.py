@@ -27,12 +27,12 @@ response = client.update_function_code(
 
 
 
-# response = client.update_function_configuration(
-#             FunctionName='func',
-#             Environment={
-#                 'Variables': {
-#                     'key1': 'func'
-#                 }
-#             }
-#         )
+response = client.update_function_configuration(
+            FunctionName='func',
+            Environment={
+                'Variables': {
+                    'key1': 'func'
+                }
+            }
+        )
 # print(response)
