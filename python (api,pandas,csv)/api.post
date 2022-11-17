@@ -1,0 +1,53 @@
+import requests
+import json
+
+url =" https://ah7y8mqgqc.execute-api.us-east-1.amazonaws.com/Prod/Send"
+
+body = {
+  "subject": "Test Email from Notification email API",
+  "streamname": "rsasupport-dev",
+  "listofemailaddress": ["angel@rsaamerica.com"],
+  "failurenotification": False,
+  "clientinfo": [
+    {
+      "clientname": "RSA_AllianceGroceryKart",
+      "discription": "Test Description",
+      "additionalinfo": "Test info",
+      "status": False
+    },
+    {
+      "clientname": "RSA_AlmichsMarket",
+      "discription": "null",
+      "additionalinfo": "null",
+      "status": True
+    },
+    {
+      "clientname": "RSA_Belcourt",
+      "discription": "null",
+      "additionalinfo": "null",
+      "status": False
+    },
+    {
+      "clientname": "RSA_BreadGarden",
+      "discription": "null",
+      "additionalinfo": "null",
+      "status": False
+    },
+    {
+      "clientname": "RSA_BrickyardsMarkets",
+      "discription": "null",
+      "additionalinfo": "null",
+      "status": False
+    }
+  ]
+}
+
+response = requests.post(url, json=body)
+
+print("status code", response.status_code)
+print("JSON Response ", response.json())
+
+if response.status_code == 200:
+    print ('OK!')
+else:
+    print ('error')

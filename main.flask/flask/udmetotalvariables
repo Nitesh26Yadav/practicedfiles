@@ -1,0 +1,29 @@
+import json
+from tkinter import Y
+from flask import Flask ,request, jsonify
+from flask_restful import Resource,Api
+
+
+app = Flask(__name__)
+api = Api(app)
+
+
+class total(Resource):
+    def post (self):
+
+        data= request.get_json()
+        answer=0
+        for k,v in data.items():
+            answer=answer+v
+
+        
+        datastore= {
+            "message": answer,
+            "status code":200 
+        }
+        return jsonify(datastore)
+                
+api.add_resource(total,'/total')
+
+if __name__ == "__main__":
+    app.run(debug=True)

@@ -1,0 +1,26 @@
+import requests
+
+
+url='https://api.publicapis.org/entries/postspractice'
+
+body ={
+    {
+        'id':1,
+        'username':'Angel',
+        'job': 'python developer',
+        'company': 'RSA America'
+    }, 
+    {
+        'id':2,
+        'username':'Nitesh',
+        'job': 'python trainee',
+        'company': 'RSA America'
+    }   
+}
+
+
+response=requests.post(url,json=body)
+
+print("status code", response.status_code)
+print("JSON Response ", response.json())
+

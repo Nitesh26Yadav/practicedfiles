@@ -1,0 +1,41 @@
+import boto3
+import os.path
+
+s3_client = boto3.client('s3',
+        aws_access_key_id= "AKIATABGVN5PEF4BS5PR",
+        aws_secret_access_key="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")
+
+# creation of bucket
+# response = s3_client.create_bucket(
+#   Bucket='nitesh.practice',
+#   CreateBucketConfiguration={
+#       'LocationConstraint':'ap-south-1' 
+#       }
+# )
+# print(response)
+
+# upload a file to s3 bucket
+
+response = s3_client.put_object(
+Body=open("rsa.1", "r").read(),
+Bucket='nitesh.practice',
+Key='rs'
+)
+
+print(response)
+print(type(response)) 
+
+
+# download a file to local system
+
+# response = s3_client.get_object(
+#  Bucket='nitesh.practice',
+#    Key='rs',
+# )
+
+# data = response.get("Body").read().decode()
+# file = open("rs", "w")
+
+# file.writelines(data)
+
+# file.close()

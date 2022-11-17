@@ -1,0 +1,12 @@
+from zipfile import ZipFile
+
+
+file_name = 'C:\\Users\\rsa-l\\Desktop\\vs py code\\index.zip'
+
+
+with ZipFile(file_name,'r') as zip:
+    zip.printdir()
+
+    zip.extractall()
+
+    

@@ -1,0 +1,43 @@
+import json
+import boto3
+
+
+s3_client = boto3.client('s3',
+        aws_access_key_id= "AKIATABGVN5PEF4BS5PR",
+        aws_secret_access_key="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")
+
+# creation of bucket
+# response = s3_client.create_bucket(
+#   Bucket='nitesh.practice',
+#   CreateBucketConfiguration={
+#       'LocationConstraint':'ap-south-1' 
+#       }
+# )
+# print(response)
+
+# upload a file to s3 bucket
+
+response = s3_client.put_object(
+    Body=open("rsa.1", "r").read(),
+    Bucket='nitesh.practice',
+    Key='rs'
+)
+#res=response.get('ResponseMetadata',{}).get('HTTPStatusCode')
+#print(res)
+
+#response['day']=['monday']
+#print(response)
+
+file = response['ResponseMetadata']
+
+fil = file
+
+#print(fil)
+
+location = {}
+location['country'] = 'india'
+
+fil['location']=location
+
+print(fil)
+

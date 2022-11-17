@@ -1,0 +1,57 @@
+import requests
+import pandas as pd
+import json
+
+url=('https://jsonplaceholder.typicode.com/posts')
+
+res = requests.get(url)
+#print(res)
+
+data = json.loads(res.content)
+#print(data)
+
+df = pd.DataFrame(data)
+#print(df)
+
+#with open('data','r') as csv_file:
+#   csv_reader = csv.reader(csv_file)
+#
+#   for line in csv_reader:
+#        print(line)
+
+
+df1=df.drop(columns = ['title','body'])
+df2=df.drop(columns=['userId','id'])
+
+df1.to_csv('df1.csv')
+#print(df1)
+
+df2.to_csv('df2.csv')
+#print(df2)
+
+df3=pd.merge(df1,df2,left_index=True, right_index=True)
+#print(df3)
+df3.to_csv('df3.csv',index=False)
+
+url1 = ('https://jsonplaceholder.typicode.com/users')
+res1 = requests.get(url1)
+data1 = json.loads(res1.content)
+
+kf=pd.DataFrame(data1)
+#print(kf)
+
+
+k3=requests.post(url1,json=data1)
+kf3=pd.DataFrame(k3)
+#print(kf3)
+
+kf3.to_csv('postkf.csv')
+print(kf3)
+
+
+
+df4=requests.post(url,json=data)
+
+
+df4.to_csv('postdf3.csv')
+print(df4)

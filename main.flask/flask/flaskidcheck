@@ -1,0 +1,72 @@
+from flask import Flask,request
+
+
+app=Flask(__name__)
+
+
+data = [
+    {
+        "id":1,
+        "name":'Angel',
+        "gender":'male',
+        "status":'active'
+    },
+    {
+        "id":2,
+        "name":'Nitesh',
+        "gender":'male',
+        "status":'active'
+    }, 
+    {
+        "id":3,
+        "name":'geetha',
+        "gender":'female',
+        "status":'active'
+    },
+    {
+        "id":4,
+        "name":'seemron',
+        "gender":'female',
+        "status":'inactive'
+    }
+]
+#class TodoList(Resource):
+#    def get(self):
+#        return data
+
+#class hello(Resource):
+@app.route('/')
+def get():
+    #for x in data:
+            
+        emp_id=request.args.get("id")
+        print(emp_id)
+        #print(x["id"])
+        #if int(emp_id) == x["id"]:
+        res = [x for x in data if int(emp_id)==x["id"]] 
+        print(res)
+        return res[0]
+        
+        
+
+        emp_name=request.args.get("name")
+        if emp_name == x["name"]:
+            return x["name"]
+
+        emp_gender=request.args.get("gender")
+        if emp_gender == x["gender"]:
+            return x["gender"]
+
+        emp_status=request.args.get("status")    
+        if emp_status == x["status"]:
+            return x["status"]
+
+        return x
+
+
+        
+#api.add_resource(TodoList,'/data')
+#api.add_resource(get,'/')
+
+if __name__==('__main__'):
+    app.run(debug=True)

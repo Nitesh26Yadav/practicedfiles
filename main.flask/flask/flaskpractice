@@ -1,0 +1,20 @@
+from flask import Flask
+from flask_restful import Resource, Api
+
+app = Flask(__name__)
+api = Api(app)
+
+class helloWorld(Resource):
+    def get(self):
+        return {'data':'hello world'}
+
+class helloname(Resource):
+    def get(self,name):
+        return {'data':'hello, {}'.format(name)}
+
+
+api.add_resource(helloWorld,'/helloworld')
+api.add_resource(helloname,'/helloworld/<string:name>')
+
+if __name__ == '__main__':
+    app.run()
