@@ -22,11 +22,6 @@ response = client.update_function_code(
 
 
 
-
-
-
-
-
 response = client.update_function_configuration(
             FunctionName='func',
             Environment={
