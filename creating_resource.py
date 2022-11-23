@@ -3,11 +3,11 @@ import boto3
 client = boto3.client('apigateway')
 
 '''--------creating resource to path------'''
-response = client.create_resource(
-    restApiId = "0jpo6xtx8k",
-    parentId='nn3tnn0doi',
-    pathPart='employee_results'
-)
+# response = client.create_resource(
+#     restApiId = "0jpo6xtx8k",
+#     parentId='nn3tnn0doi',
+#     pathPart='employee_results'
+# )
 
 '''------Adding methods------'''
 
@@ -26,8 +26,8 @@ response = client.put_integration(
     resourceId='pfs44h',
     httpMethod='GET',
     type = 'AWS_PROXY',
-    integrationHttpMethod='GET',
-    uri = 'arn:aws:apigateway:ap-south-1:lambda:path/2022-11-18/functions/arn:aws:lambda:ap-south-1:206239526750:function:databaseapi1/invocations'
+    integrationHttpMethod='POST',
+    uri = "arn:aws:apigateway:ap-south-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-south-1:206239526750:function:databaseapi1/invocations"
 )
 
 '''-------putting integration responses-------'''
@@ -45,5 +45,7 @@ response = client.create_deployment(
     stageName='data'
 )
 
-# print(response)
+print(response)
+
+
 
