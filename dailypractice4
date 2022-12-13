@@ -1,49 +1,19 @@
-# import boto3
+import json
+import pandas as pd
 
-# client = boto3.client('apigateway')
-
-# '''--------creating resource to path------'''
-# # response = client.create_resource(
-# #     restApiId = "0jpo6xtx8k",
-# #     parentId='nn3tnn0doi',
-# #     pathPart='employee_results'
-# # )
-
-# '''------Adding methods------'''
-
-# response = client.put_method(
-#     restApiId = "0jpo6xtx8k",
-#     resourceId='pfs44h',
-#     httpMethod='GET',
-#     authorizationType='None'
-# )
+body1 = "{\r\n\t\"RuleInfo\" : \"Test\",\r\n\t\"Rule_Guid\" : \"sffr\",\r\n\t\"Rule_Type_Id\" : \"qwert\",\r\n\t\"Rule_Description\" : \"describe1\",\r\n\t\"Rule_Sub_Type_Id\" :\" subtype\",\r\n\t\"No_Offer\" : 1,\r\n\t\"Run_Frequency\" :\"frequency\",\r\n\t\"Start_Date\": \"2022-05-16 04:35:13.000\",\r\n\t\"End_Date\" : \"2022-05-16 04:35:13.000\",\r\n\t\"Rule_Notification_Email\" : \"Abc@gmail.com\",\r\n\t\"Approval_Required\" : 1,\r\n\t\"Push_Message\" : \"message\",\r\n\t\"Push_Time\" : \"2022-05-16 04:35:13.000\",\r\n\t\"Notify_Admin_Post_Run\":  145,\r\n\t\"Update_Group_Stats\" : 2,\r\n\t\"RSAClientID\" : 125365,\r\n\t\"RSAClientGuid\" : 14589225,\r\n\t\"Rule_Status\": 1,\r\n\t\"Created_By\" : 14588\r\n}"
 
 
-# '''---------putting integration---------'''
+# body = json.loads(body1)
+# # res = body.values()
+# # print(res)
+# print(body)
+# @RuleInfo,@Rule_Guid,@Rule_Type_Id,@Rule_Description,@Rule_Sub_Type_Id,@No_Offer,@Run_Frequency,@Start_Date,@End_Date,@Rule_Notification_Email,@Approval_Required,@Push_Message,@Push_Time,@Notify_Admin_Post_Run,@Update_Group_Stats,@RSAClientID,@RSAClientGuid,@Rule_Status,@Created_By
 
-# response = client.put_integration(
-#     restApiId = "0jpo6xtx8k",
-#     resourceId='pfs44h',
-#     httpMethod='GET',
-#     type = 'AWS_PROXY',
-#     integrationHttpMethod='GET',
-#     uri = 'arn:aws:apigateway:ap-south-1:lambda:path/2022-11-18/functions/arn:aws:lambda:ap-south-1:206239526750:function:databaseapi1/invocations'
-# )
+# data = (f"EXEC ap_update_rule, @RuleInfo ='{(body['RuleInfo'])}',@Rule_Guid = {body['Rule_Guid']},@Rule_Type_Id = '{body['Rule_Type_Id']}',@Rule_Description = '{body['Rule_Description']}',@Rule_Sub_Type_Id = '{body['Rule_Sub_Type_Id']}',@No_Offer = {body['No_Offer']},@Run_Frequency ='{body['Run_Frequency']}',@Start_Date = '{body['Start_Date']}',@End_Date = '{body['End_Date']}',@Rule_Notification_Email = {body['Rule_Notification_Email']},@Approval_Required = '{body['Approval_Required']}',@Push_Message = '{body['Push_Message']}',@Push_Time = {body['Push_Time']},@Notify_Admin_Post_Run = '{body['Notify_Admin_Post_Run']}',@Update_Group_Stats = '{body['Update_Group_Stats']}',@RSAClientID = {body['RSAClientID']},@RSAClientGuid = {body['RSAClientGuid']},@Rule_Status = {body['Rule_Status']},@Created_By = {body['Created_By']}")
 
-# '''-------putting integration responses-------'''
-# response = client.put_integration_response(
-#     restApiId = "0jpo6xtx8k",
-#     resourceId='pfs44h',
-#     httpMethod='GET',
-#     statusCode='200',
-#     contentHandling = 'CONVERT_TO_BINARY'or 'CONVERT_TO_TEXT'
-# )
+# print(data)
 
-# '''-----------creating deployemnt-------------'''
-# response = client.create_deployment(
-#     restApiId="0jpo6xtx8k",
-#     stageName='data'
-# )
+# (f"exec dbo.ap_update_rule  {body['RuleInfo']},{body['Rule_Guid']},{body['Rule_Type_Id']}','{body['Rule_Sub_Type_Id']}',{body['No_Offer']}, '{body['RunFrequency']}','{body['RuleDescription']}', '{body['Start_Date']}', '{body['End_Date']}',{body['Rule_Notification_Email']},'{body['Approval_Required']}', '{body['Push_Message']}', {body['Push_Time']}, '{body['Notify_Admin_Post_Run']}','{body['Update_Group_Stats']}',{body['RSAClientID']},{body['RSAClientGUID']}, {body['Rule_Status']},{body['Created_By']}") 
 
-# print(response)
 

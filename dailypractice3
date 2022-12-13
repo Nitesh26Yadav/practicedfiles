@@ -1,0 +1,44 @@
+# data = {'resource': '/customersdata', 'path': '/customersdata', 'httpMethod': 'POST', 'headers': {'Accept': '*/*', 'Accept-Encoding': 'gzip, deflate, br', 'Cache-Control': 'no-cache', 'Content-Type': 'application/json', 'Host': 'tymmcpx8hk.execute-api.ap-south-1.amazonaws.com', 'Postman-Token': 'bb76efb9-3040-4419-ba5d-b6515fd8e65a', 'User-Agent': 'PostmanRuntime/7.30.0', 'X-Amzn-Trace-Id': 'Root=1-638de05d-18c269b56f9b6b2533b4ee9b', 'X-Forwarded-For': '52.86.137.172', 'X-Forwarded-Port': '443', 'X-Forwarded-Proto': 'https'}, 'multiValueHeaders': {'Accept': ['*/*'], 'Accept-Encoding': ['gzip, deflate, br'], 'Cache-Control': ['no-cache'], 'Content-Type': ['application/json'], 'Host': ['tymmcpx8hk.execute-api.ap-south-1.amazonaws.com'], 'Postman-Token': ['bb76efb9-3040-4419-ba5d-b6515fd8e65a'], 'User-Agent': ['PostmanRuntime/7.30.0'], 'X-Amzn-Trace-Id': ['Root=1-638de05d-18c269b56f9b6b2533b4ee9b'], 'X-Forwarded-For': ['52.86.137.172'], 'X-Forwarded-Port': ['443'], 'X-Forwarded-Proto': ['https']}, 'queryStringParameters': None, 'multiValueQueryStringParameters': None, 'pathParameters': None, 'stageVariables': None, 'requestContext': {'resourceId': 'a1tjdt', 'resourcePath': '/customersdata', 'httpMethod': 'POST', 'extendedRequestId': 'cq_-rG0JhcwFUkg=', 'requestTime': '05/Dec/2022:12:13:17 +0000', 'path': '/ap/customersdata', 'accountId': '206239526750', 'protocol': 'HTTP/1.1', 'stage': 'ap', 'domainPrefix': 'tymmcpx8hk', 'requestTimeEpoch': 1670242397762, 'requestId': '7508071d-e659-414d-adea-82920861bdc2', 'identity': {'cognitoIdentityPoolId': None, 'accountId': None, 'cognitoIdentityId': None, 'caller': None, 'sourceIp': '52.86.137.172', 'principalOrgId': None, 'accessKey': None, 'cognitoAuthenticationType': None, 'cognitoAuthenticationProvider': None, 'userArn': None, 'userAgent': 'PostmanRuntime/7.30.0', 'user': None}, 'domainName': 'tymmcpx8hk.execute-api.ap-south-1.amazonaws.com', 'apiId': 'tymmcpx8hk'}, 'body': '{\r\n\t"RuleInfo": "Rule2",\r\n\t"Rule_Guid": "abcded",\r\n\t"Rule_Type_Id": "qwnmckdh",\r\n\t"Rule_Description": "dee1",\r\n\t"Rule_Sub_Type_Id": "sub",\r\n\t"No_Offer": 1,\r\n\t"Run_Frequency": "freqcy",\r\n\t"Start_Date": "2022-05-16 04:35:13.000",\r\n\t"End_Date": "2022-05-16 04:35:13.000",\r\n\t"Rule_Notification_Email": "yadav@gmail.com",\r\n\t"Approval_Required": 1,\r\n\t"Push_Message": "message",\r\n\t"Push_Time": "2022-05-16 04:35:13.000",\r\n\t"Notify_Admin_Post_Run": 145,\r\n\t"Update_Group_Stats": 2,\r\n\t"RSAClientID": 125365,\r\n\t"RSAClientGuid": 14589225,\r\n\t"Rule_Status": 1,\r\n\t"second_id": {\r\n\t\t"Created_By": 14588,\r\n\t\t"order_id": 2201,\r\n\t\t"order_delivery_id": 7484688477831050,\r\n\t\t"store_location_code": 72,\r\n\t\t"store_zip_code": 10451,\r\n\t\t"transaction_date_pt": "2022-05-16",\r\n\t\t"transaction_date_time_pt": "2022-05-16 04:35:13",\r\n\t\t"transaction_amt": 29.39,\r\n\t\t"approval_code": 801496,\r\n\t\t"stan": 119271,\r\n\t\t"order_status": 1\r\n\t}\r\n}', 'isBase64Encoded': False}
+
+
+# print(data['body']['second_id'])
+
+
+
+body = {
+
+	"RuleInfo": "3",
+	"Rule_Guid": "abcded",
+	"Rule_Type_Id": "qwnmckdh",
+	"Rule_Description": "dee1",
+	"Rule_Sub_Type_Id": "sub",
+	"No_Offer": 1,
+	"Run_Frequency": "freqcy",
+	"Start_Date": "2022-05-16 04:35:13.000",
+	"End_Date": "2022-05-16 04:35:13.000",
+	"Rule_Notification_Email": "yadav@gmail.com",
+	"Approval_Required": 1,
+	"Push_Message": "message",
+	"Push_Time": "2022-05-16 04:35:13.000",
+	"Notify_Admin_Post_Run": 145,
+	"Update_Group_Stats": 2,
+	"RSAClientID": 125365,
+	"RSAClientGuid": 14589225,
+	"Rule_Status": 1,
+	"Created_By": 14588,
+	"second_id": {
+		"order_id": 2202,
+		"order_delivery_id": 7484688477831050,
+		"store_location_code": 72,
+		"store_zip_code": 10451,
+		"transaction_date_pt": "2022-05-16",
+		"transaction_date_time_pt": "2022-05-16 04:35:13",
+		"transaction_amt": 29.39,
+		"approval_code": 801496,
+		"stan": 119271,
+		"order_status": 1
+	}
+}
+
+
+print(body["second_id"]['order_id'])
