@@ -30,7 +30,8 @@ def lambda_handler(event,context):
         response = getcustomersdata(requestbody['queryStringParameters']['RuleId'])    
     elif httpMethod == 'PATCH' and path == cust:
         requestBody = json.loads(event['body'])
-        response = modifycustomersdata(requestBody['first_id']['RuleId'],requestBody['first_id']['RuleGuid'],requestBody['first_id']['RuleInfo'],requestBody['first_id']['RuleTypeId'],requestBody['first_id']['SubTypeId'],requestBody['first_id']['RuleDescription'],requestBody['first_id']['StartDate'],requestBody['first_id']['EndDate'],requestBody['first_id']['RunFrequency'],requestBody['first_id']['LastRunDate'],requestBody['first_id']['NextRunDate'],requestBody['first_id']['ApprovalRequired'],requestBody['first_id']['PushNotificationMessage'],requestBody['first_id']['NotificationTime'],requestBody['first_id']['UpdateGroupStats'],requestBody['first_id']['NotifyAdminPostRun'],requestBody['first_id']['RuleNotificationEmail'],requestBody['first_id']['CreateGroupOnlyNoOfferRequired'],requestBody['first_id']['CreatedBy'],requestBody['first_id']['CreateDateTime'],requestBody['first_id']['Updatedby'],requestBody['first_id']['UpdateDateTime'],requestBody['first_id']['RuleStatus'],requestBody['first_id']['RSAClientID'],requestBody['first_id']['RSAClientGuid'],requestBody['second_id']['APRuleCriteriaId'],requestBody['second_id']['APRuleId'],requestBody['second_id']['InLastDays'],requestBody['second_id']['NTimesPurchased'],requestBody['second_id']['TopNCustomers'],requestBody['second_id']['AmountPurchased'],requestBody['second_id']['PurchasedUPCs'],requestBody['second_id']['PurchasedDepts'],requestBody['second_id']['StoreList'],requestBody['second_id']['ZipCodeList'],requestBody['second_id']['CustomerSince'],requestBody['second_id']['CreateDateTime'],requestBody['second_id']['UpdateDateTime'],requestBody['second_id']['IsTierBased'],requestBody['second_id']['TierTypeID'],requestBody['second_id']['CriteriaStatus'],requestBody['second_id']['TierName'])
+        response = modifycustomersdata(requestBody['first_id']['RuleId'],requestBody['first_id']['RuleInfo'],requestBody['first_id']['RuleTypeId'],requestBody['first_id']['SubTypeID'],requestBody['first_id']['RuleDescription'],requestBody['first_id']['StartDate'],requestBody['first_id']['EndDate'],requestBody['first_id']['RunFrequency'],requestBody['first_id']['LastRunDate'],requestBody['first_id']['NextRunDate'],requestBody['first_id']['ApprovalRequired'],requestBody['first_id']['PushNotificationMessage'],requestBody['first_id']['NotificationTime'],requestBody['first_id']['UpdateGroupStats'],requestBody['first_id']['NotifyAdminPostRun'],requestBody['first_id']['RuleNotificationEmail'],requestBody['first_id']['CreateGroupOnlyNoOfferRequired'],requestBody['first_id']['CreatedBy'],requestBody['first_id']['CreateDateTime'],requestBody['first_id']['UpdatedBy'],requestBody['first_id']['UpdateDateTime'],requestBody['first_id']['RuleStatus'],requestBody['first_id']['RSAClientID'],requestBody['first_id']['RSAClientGuid'],requestBody['second_id']['ApcriteriaId'],requestBody['second_id']['APRuleId'],requestBody['second_id']['InLastDays'],requestBody['second_id']['NTimesPurchased'],requestBody['second_id']['TopNCustomers'],requestBody['second_id']['AmountPurchased'],requestBody['second_id']['PurchasedUPCs'],requestBody['second_id']['PurchasedDepts'],requestBody['second_id']['StoreList'],requestBody['second_id']['ZipCodeList'],requestBody['second_id']['CustomerSince'],requestBody['second_id']['CreateDateTime'],requestBody['second_id']['UpdateDateTime'],requestBody['second_id']['IsTierBased'],requestBody['second_id']['TierTypeID'],requestBody['second_id']['CriteriaStatus'],requestBody['second_id']['TierName'])
+
     else:
         response = buildResponse(404,'Not Found') 
         
@@ -92,22 +93,45 @@ def savecustomersdata(body):
         return buildResponse(200,requestbody)
     except:
         logger.exception('Do your custom error handling here')
-            
-def modifycustomersdata(ruleid,ruleinfo,ruletypeid,subtypeid,ruledescription,startdate,enddate,runfrequency,lastrundate,nextrundate,approvalrequired,pushnotificationmessage,notificationtime,updategroupstats,notifyadminpostrun,rulenotification,creategroupnooffer,createdby,createdatetime,updatedby,updatedatetime,rulestatus,rsaclientid,rsaclientguid,apruleid,inlastdays,ntimespurchased,topncustomers,amountpurchased,purchasedupcs,purchasedepts,storelist,zipcodelist,customersince,createdatime,updatedtime,istierbased,tiertypeid,criteriastatus,tiername):
-    try:
-        table.execute(f"UPDATE AP_Rules SET RuleInfo = '{ruleinfo}', RuleTypeId = '{ruletypeid}', SubTypeID = '{subtypeid}', RuleDescription = '{ruledescription}' , StartDate = '{startdate}',EndDate = '{enddate}',RunFrequency = '{runfrequency}',LastRunDate = '{lastrundate}', NextRunDate = '{nextrundate}' ,ApprovalRequired = '{approvalrequired}' , PushNotificationMessage = '{pushnotificationmessage}', NotificationTime = '{notificationtime}', UpdateGroupStats = '{updategroupstats}', NotifyAdminPostRun = '{notifyadminpostrun}', RuleNotificationEmail = '{rulenotification}', CreateGroupOnlyNoOfferRequired = '{creategroupnooffer}' , CreatedBy = '{createdby}', CreateDateTime = '{createdatetime}',UpdatedBy = '{updatedby}', UpdateDateTime = '{updatedatetime}', RuleStatus = '{rulestatus}', RSAClientID = '{rsaclientid}' , RSAClientGuid = '{rsaclientguid}' WHERE RuleId = '{ruleid}'")
-        table.execute(f"UPDATE AP_Rules_Criteria SET InLastDays = {inlastdays},NTimesPurchased = {ntimespurchased},TopNCustomers = {topncustomers}',AmountPurchased = '{amountpurchased}',PurchasedUPCs = '{purchasedupcs}',PurchasedDepts = '{purchasedepts}',StoreList = '{storelist}',ZipCodeList = '{zipcodelist}',CustomerSince = '{customersince}',CreateDateTime = '{createdatime}',UpdateDateTime = '{updatedtime}',IsTierBased = {istierbased},TierTypeID = {tiertypeid},CriteriaStatus = {criteriastatus},TierName = '{tiername}' WHERE APRuleId = {apruleid}")
 
+            
+def modifycustomersdata(ruleid,ruleinfo,ruletypeid,subtypeid,ruledescription,startdate,enddate,runfrequency,lastrundate,nextrundate,approvalrequired,pushnotificationmessage,notificationtime,updategroupstats,notifyadminpostrun,rulenotification,creategroupnooffer,createdby,createdatetime,updatedby,updatedatetime,rulestatus,rsaclientid,rsaclientguid,apcriteriaid,apruleid,inlastdays,ntimespurchased,topncustomers,amountpurchased,purchasedupcs,purchasedepts,storelist,zipcodelist,customersince,createdatime,updatedtime,istierbased,tiertypeid,criteriastatus,tiername):
+    try:
+        table.execute(f"select * from AP_Rules where RuleId = {ruleid}")
+
+        headers = [x[0] for x in table.description]
+        result = table.fetchall()
+        for res in result:
+            var1 = dict(zip(headers,res))
+            var3 = var1['RuleGuid']
         conn.commit()
+        
+        table.execute(f"exec ap_update_rule @Rule_Guid = '{var3}',@Rule_Type_Id = '{ruletypeid}',@Rule_Description = '{ruledescription}',@Rule_Sub_Type_Id = '{subtypeid}',@No_Offer = '{creategroupnooffer}',@Run_Frequency = '{runfrequency}',@Start_Date = '{startdate}',@End_Date = '{enddate}',@Rule_Notification_Email = '{rulenotification}',@Approval_Required = '{approvalrequired}',@Push_Message = '{pushnotificationmessage}',@Push_Time = '{notificationtime}',@Notify_Admin_Post_Run = '{notifyadminpostrun}',@Update_Group_Stats = '{updategroupstats}',@RSAClientID = '{rsaclientid}',@RSAClientGuid = '{rsaclientguid}',@Rule_Status = '{rulestatus}',@Created_By = '{createdby}'")
+        conn.commit()
+        table.execute(f"exec ap_update_rule_criteria @Rule_Criteria_Id= '{apcriteriaid}',@Rule_Id = {apruleid},@In_Last_Days = {inlastdays},@Times_Purchased ={ntimespurchased},@Amount_Spend ='{amountpurchased}',@TopNCustomers = '{topncustomers}',@ZipCodeList = {zipcodelist},@Is_Tier_Based= {istierbased},@Tier_Name = {tiername},@Rule_Criteria_Status = {criteriastatus},@Created_By = '{createdby}'") 
+        conn.commit()
+
         body = {
             'operation':'PATCH',
             'Message':'SUCCESS'
         }
         return buildResponse(200,body)
+
     except:
-        logger.exception("Do your Custom error handling here.")    
-        return buildResponse(404,'Code has not been Executed!')
-          
+        logger.exception("Do your Custom error handling here.")
+        
+        table.execute(f"select * from AP_Rules where RuleId = {ruleid}")
+        
+        headers = [x[0] for x in table.description]
+        result = table.fetchall()
+        for res in result:
+            var1 = dict(zip(headers,res))
+            gd = var1['RuleGuid']
+            create = var1['CreatedBy']
+        conn.commit()
+        table.execute(f"exec ap_delete_rule @Rule_guid = '{gd}',@Created_by = '{create}'") 
+        conn.commit()
+        return buildResponse(404,'Insert has been Failed!')
  
 def buildResponse(statusCode,body=None):
     response = {
@@ -121,6 +145,3 @@ def buildResponse(statusCode,body=None):
     if body is not None:
         response['body'] = (body)
     return response
-       
-
-       

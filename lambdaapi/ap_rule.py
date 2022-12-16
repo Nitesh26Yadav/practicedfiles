@@ -82,7 +82,7 @@ def savecustomersdata(body):
         
         conn.commit()
         
-        requestbody ={
+        requestbody = {
             'Operation': 'SAVE',
             'Message'  :'SUCCESS',
             'Item': body
