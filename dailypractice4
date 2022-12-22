@@ -1,19 +1,128 @@
-import json
-import pandas as pd
-
-body1 = "{\r\n\t\"RuleInfo\" : \"Test\",\r\n\t\"Rule_Guid\" : \"sffr\",\r\n\t\"Rule_Type_Id\" : \"qwert\",\r\n\t\"Rule_Description\" : \"describe1\",\r\n\t\"Rule_Sub_Type_Id\" :\" subtype\",\r\n\t\"No_Offer\" : 1,\r\n\t\"Run_Frequency\" :\"frequency\",\r\n\t\"Start_Date\": \"2022-05-16 04:35:13.000\",\r\n\t\"End_Date\" : \"2022-05-16 04:35:13.000\",\r\n\t\"Rule_Notification_Email\" : \"Abc@gmail.com\",\r\n\t\"Approval_Required\" : 1,\r\n\t\"Push_Message\" : \"message\",\r\n\t\"Push_Time\" : \"2022-05-16 04:35:13.000\",\r\n\t\"Notify_Admin_Post_Run\":  145,\r\n\t\"Update_Group_Stats\" : 2,\r\n\t\"RSAClientID\" : 125365,\r\n\t\"RSAClientGuid\" : 14589225,\r\n\t\"Rule_Status\": 1,\r\n\t\"Created_By\" : 14588\r\n}"
-
-
-# body = json.loads(body1)
-# # res = body.values()
-# # print(res)
-# print(body)
-# @RuleInfo,@Rule_Guid,@Rule_Type_Id,@Rule_Description,@Rule_Sub_Type_Id,@No_Offer,@Run_Frequency,@Start_Date,@End_Date,@Rule_Notification_Email,@Approval_Required,@Push_Message,@Push_Time,@Notify_Admin_Post_Run,@Update_Group_Stats,@RSAClientID,@RSAClientGuid,@Rule_Status,@Created_By
-
-# data = (f"EXEC ap_update_rule, @RuleInfo ='{(body['RuleInfo'])}',@Rule_Guid = {body['Rule_Guid']},@Rule_Type_Id = '{body['Rule_Type_Id']}',@Rule_Description = '{body['Rule_Description']}',@Rule_Sub_Type_Id = '{body['Rule_Sub_Type_Id']}',@No_Offer = {body['No_Offer']},@Run_Frequency ='{body['Run_Frequency']}',@Start_Date = '{body['Start_Date']}',@End_Date = '{body['End_Date']}',@Rule_Notification_Email = {body['Rule_Notification_Email']},@Approval_Required = '{body['Approval_Required']}',@Push_Message = '{body['Push_Message']}',@Push_Time = {body['Push_Time']},@Notify_Admin_Post_Run = '{body['Notify_Admin_Post_Run']}',@Update_Group_Stats = '{body['Update_Group_Stats']}',@RSAClientID = {body['RSAClientID']},@RSAClientGuid = {body['RSAClientGuid']},@Rule_Status = {body['Rule_Status']},@Created_By = {body['Created_By']}")
-
-# print(data)
-
-# (f"exec dbo.ap_update_rule  {body['RuleInfo']},{body['Rule_Guid']},{body['Rule_Type_Id']}','{body['Rule_Sub_Type_Id']}',{body['No_Offer']}, '{body['RunFrequency']}','{body['RuleDescription']}', '{body['Start_Date']}', '{body['End_Date']}',{body['Rule_Notification_Email']},'{body['Approval_Required']}', '{body['Push_Message']}', {body['Push_Time']}, '{body['Notify_Admin_Post_Run']}','{body['Update_Group_Stats']}',{body['RSAClientID']},{body['RSAClientGUID']}, {body['Rule_Status']},{body['Created_By']}") 
+# import json
+# import pymssql
+# import logging
 
 
+# logger = logging.getLogger()
+# logger.setLevel(logging.INFO)
+
+# cust = "/customersdata"
+
+
+
+# conn = pymssql.connect(
+#             server='database-1.cxrjyosgnij0.ap-south-1.rds.amazonaws.com', 
+#             user='admin', 
+#             password='Veritra2022', 
+#             database='employeedata')
+
+# table = conn.cursor()
+
+# body = {
+#     "first_id" :{
+# 	"Rule_Type_Id": 11,
+# 	"Rule_Description": "completed",
+# 	"Rule_Sub_Type_Id": 8,
+# 	"No_Offer": 1,
+# 	"Run_Frequency": "freqcy",
+# 	"Start_Date": "2022-05-16 04:35:13.000",
+# 	"End_Date": "2022-05-16 04:35:13.000",
+# 	"Rule_Notification_Email": "yadav@gmail.com",
+# 	"Approval_Required": 1,
+# 	"Push_Message": "message",
+# 	"Push_Time": "2022-05-16 04:35:13.000",
+# 	"Notify_Admin_Post_Run": 145,
+# 	"Update_Group_Stats": 2,
+# 	"RSAClientID": 125365,
+# 	"RSAClientGuid": 14589225,
+# 	"Rule_Status": 1,
+# 	"Created_By": 14588
+#     },
+# 	"second_id":{
+# 		"Rule_Criteria_Id":0,
+# 		"In_Last_Days" : 4,
+# 		"Times_Purchased" : 3,
+# 		"Amount_Spend" : 75,
+# 		"TopNCustomers" : 5,
+# 		"ZipCodeList" :"12456",
+# 		"Is_Tier_Based": 1,
+# 		"Tier_Name" : "kum",
+# 		"Rule_Criteria_Status" : 1,
+# 		"Created_By" : 14553
+# 	}
+# }
+
+# def lambda_handler(event,context):
+#     logger.info(event)
+#     httpMethod = event['httpMethod']
+#     path = event['path']
+    
+#     if httpMethod == 'POST' and path == cust:
+#         response = savecustomersdata(json.loads(event['body']))
+#     else:
+#         response = buildResponse(404,'Not Found') 
+        
+#     return {
+#             'body': json.dumps(response,default=str)
+#         }
+
+
+# def savecustomersdata(body):
+#     try:
+#         table.execute(f"exec ap_update_rule @Rule_Guid = '{body['first_id']['Rule_Guid']}',@Rule_Type_Id = '{body['first_id']['Rule_Type_Id']}',@Rule_Description = '{body['first_id']['Rule_Description']}',@Rule_Sub_Type_Id = '{body['first_id']['Rule_Sub_Type_Id']}',@No_Offer = '{body['first_id']['No_Offer']}',@Run_Frequency = '{body['first_id']['Run_Frequency']}',@Start_Date = '{body['first_id']['Start_Date']}',@End_Date = '{body['first_id']['End_Date']}',@Rule_Notification_Email = '{body['first_id']['Rule_Notification_Email']}',@Approval_Required = '{body['first_id']['Approval_Required']}',@Push_Message = '{body['first_id']['Push_Message']}',@Push_Time = '{body['first_id']['Push_Time']}',@Notify_Admin_Post_Run = '{body['first_id']['Notify_Admin_Post_Run']}',@Update_Group_Stats = '{body['first_id']['Update_Group_Stats']}',@RSAClientID = '{body['first_id']['RSAClientID']}',@RSAClientGuid = '{body['first_id']['RSAClientGuid']}',@Rule_Status = '{body['first_id']['Rule_Status']}',@Created_By = '{body['first_id']['Created_By']}'")
+#         headers = [x[0] for x in table.description]
+#         result = table.fetchall()
+#         conn.commit()
+
+#         data = []
+#         for res in result:
+#             var1 = (dict(zip(headers,res)))
+#             data.append(var1)
+ 
+#         return buildResponse(200,data)
+#     except:
+#         logger.exception('Do your custom error handling here!')
+
+# def buildResponse(statusCode,body=None):
+#     response = {
+#         'statusCode':statusCode,
+#         'headers':{
+#             'Content-Type': 'application/json',
+#             'Access-Control-Allow-Origin':'*',
+            
+#         }
+#     }
+#     if body is not None:
+#         response['body'] = (body)
+#     return response
+  
+# print(savecustomersdata(body={
+#     "first_id" :{
+#     "Rule_Guid" :'',
+# 	"Rule_Type_Id": 12,
+# 	"Rule_Description": "completed",
+# 	"Rule_Sub_Type_Id": 8,
+# 	"No_Offer": 1,
+# 	"Run_Frequency": "freqcy",
+# 	"Start_Date": "2022-05-16 04:35:13.000",
+# 	"End_Date": "2022-05-16 04:35:13.000",
+# 	"Rule_Notification_Email": "yadav@gmail.com",
+# 	"Approval_Required": 1,
+# 	"Push_Message": "message",
+# 	"Push_Time": "2022-05-16 04:35:13.000",
+# 	"Notify_Admin_Post_Run": 145,
+# 	"Update_Group_Stats": 2,
+# 	"RSAClientID": 125365,
+# 	"RSAClientGuid": 14589225,
+# 	"Rule_Status": 1,
+# 	"Created_By": 14588
+#     }
+# }))
+
+
+string_1 = []
+
+if not string_1:
+    print('String is empty.')
+else:
+    print(string_1)
