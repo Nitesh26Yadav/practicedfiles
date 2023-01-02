@@ -88,16 +88,14 @@ def savecustomersdata(body):
             id1 = aprul['RuleId']
             guid = aprul['RuleGuid']
 
-        table.execute(f"exec ap_update_rule_criteria @Rule_Criteria_Id= '',@Rule_Id = {id1},@In_Last_Days = {body['second_id']['In_Last_Days']},@Times_Purchased ={body['second_id']['Times_Purchased']},@Amount_Spend ='{body['second_id']['Amount_Spend']}',@TopNCustomers = '{body['second_id']['TopNCustomers']}',@ZipCodeList = {body['second_id']['ZipCodeList']},@Is_Tier_Based= {body['second_id']['Is_Tier_Based']},@Tier_Name = {body['second_id']['Tier_Name']},@Rule_Criteria_Status = {body['second_id']['Rule_Criteria_Status']},@Created_By = '{body['second_id']['Created_By']}'") 
+        table.execute(f"exec ap_update_rule_criteria @Rule_Criteria_Id= '{body['second_id']['Rule_Criteria_Id']}',@Rule_Id = {id1},@In_Last_Days = {body['second_id']['In_Last_Days']},@Times_Purchased ={body['second_id']['Times_Purchased']},@Amount_Spend ='{body['second_id']['Amount_Spend']}',@TopNCustomers = '{body['second_id']['TopNCustomers']}',@ZipCodeList = {body['second_id']['ZipCodeList']},@Is_Tier_Based= {body['second_id']['Is_Tier_Based']},@Tier_Name = {body['second_id']['Tier_Name']},@Rule_Criteria_Status = {body['second_id']['Rule_Criteria_Status']},@Created_By = '{body['second_id']['Created_By']}'") 
         headers = [x[0] for x in table.description]
         result1 = table.fetchall()
         conn.commit()
-        
+
         for res1 in result1:
             apcri = (dict(zip(headers,res1)))
-            
         data = (aprul,apcri)
-        
         
         requestbody = {
             'Operation': 'SAVE',

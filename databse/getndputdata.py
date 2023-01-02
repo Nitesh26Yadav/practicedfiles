@@ -47,19 +47,19 @@ conn = pymssql.connect(
             database='employeedata')
 
 cursor = conn.cursor()
-cursor.execute('''
-                CREATE TABLE foodStoredata(
-                    order_id float DEFAULT NULL,
-                    order_delivery_id float DEFAULT NULL,
-                    store_location_code INT DEFAULT NULL,
-                    store_zip_code INT DEFAULT NULL, 
-                    transaction_date_pt DATE DEFAULT NULL, 
-                    transaction_date_time_pt DATETIME DEFAULT NULL,
-                    transaction_amt float DEFAULT NULL, 
-                    approval_code INT DEFAULT NULL, 
-                    stan INT DEFAULT NULL
-                )
-            ''')
+# cursor.execute('''
+#                 CREATE TABLE foodStoredata(
+#                     order_id float DEFAULT NULL,
+#                     order_delivery_id float DEFAULT NULL,
+#                     store_location_code INT DEFAULT NULL,
+#                     store_zip_code INT DEFAULT NULL, 
+#                     transaction_date_pt DATE DEFAULT NULL, 
+#                     transaction_date_time_pt DATETIME DEFAULT NULL,
+#                     transaction_amt float DEFAULT NULL, 
+#                     approval_code INT DEFAULT NULL, 
+#                     stan INT DEFAULT NULL
+#                 )
+#             ''')
 
 
 
@@ -72,7 +72,7 @@ for row in result.itertuples():
 sql = ("INSERT INTO foodStoredata(order_id , order_delivery_id , store_location_code , store_zip_code , transaction_date_pt , transaction_date_time_pt , transaction_amt , approval_code , stan ) VALUES( %s , %s , %s , %s , %s , %s , %s , %s , %s )")
 
 data = tuple(data)
-print(data)
+# print(data)
 finaldata = []
 for each in data:
     finaldata.append(each)
