@@ -12,7 +12,7 @@ client = boto3.client('apigateway')
 '''------Adding methods------'''
 
 response = client.put_method(
-    restApiId = "0jpo6xtx8k",
+    restApiId = "0jpo6xtx8k",  
     resourceId='pfs44h',
     httpMethod='GET',
     authorizationType='None'
@@ -46,6 +46,3 @@ response = client.create_deployment(
 )
 
 print(response)
-
-
-

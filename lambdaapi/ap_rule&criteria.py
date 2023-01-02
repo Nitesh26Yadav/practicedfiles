@@ -8,6 +8,8 @@ logger.setLevel(logging.INFO)
 
 cust = "/customersdata"
 
+
+
 conn = pymssql.connect(
             server='database-1.cxrjyosgnij0.ap-south-1.rds.amazonaws.com', 
             user='admin', 
@@ -29,9 +31,9 @@ def lambda_handler(event,context):
         requestbody = event
         response = getcustomersdata(requestbody['queryStringParameters']['RuleId'])
     
-    # elif httpMethod == 'DELETE' and path == cust:
-    #     requestbody = event
-    #     # response = deletecustomersdata(requestbody['queryStringParameters']['RuleInfo'])
+    elif httpMethod == 'DELETE' and path == cust:
+        requestbody = event
+        response = deletecustomersdata(requestbody['queryStringParameters']['Ruleguid'],requestbody['queryStringParameters']['createdby'])
         
     elif httpMethod == 'PATCH' and path == cust:
         requestBody = json.loads(event['body'])
@@ -73,26 +75,10 @@ def getcustomersdata(Rule):
     except:
         logger.exception('Do your custom error handling here.')
         
-def totalcustomersdata():
-    try:
-        table.execute(f"SELECT * from AP_Rules where RuleStatus = {1}")
-        headers = [x[0] for x in table.description]
-        result = table.fetchall()
-        
-        data = []
-        for res in result:
-            var1 = (dict(zip(headers,res)))
-            data.append(var1)
-        conn.commit()
-        return buildResponse(200,data)
-    
-    except:
-        logger.exception("do your custom handling here.")
         
 def savecustomersdata(body):
     try:
-        table.execute(f"exec ap_update_rule @Rule_guid = '{body['first_id']['RuleInfo']}',@Rule_Type_Id = '{body['first_id']['Rule_Type_Id']}',@Rule_Description = '{body['first_id']['Rule_Description']}',@Rule_Sub_Type_Id = '{body['first_id']['Rule_Sub_Type_Id']}',@No_Offer = '{body['first_id']['No_Offer']}',@Run_Frequency = '{body['first_id']['Run_Frequency']}',@Start_Date = '{body['first_id']['Start_Date']}',@End_Date = '{body['first_id']['End_Date']}',@Rule_Notification_Email = '{body['first_id']['Rule_Notification_Email']}',@Approval_Required = '{body['first_id']['Approval_Required']}',@Push_Message = '{body['first_id']['Push_Message']}',@Push_Time = '{body['first_id']['Push_Time']}',@Notify_Admin_Post_Run = '{body['first_id']['Notify_Admin_Post_Run']}',@Update_Group_Stats = '{body['first_id']['Update_Group_Stats']}',@RSAClientID = '{body['first_id']['RSAClientID']}',@RSAClientGuid = '{body['first_id']['RSAClientGuid']}',@Rule_Status = '{body['first_id']['Rule_Status']}',@Created_By = '{body['first_id']['Created_By']}'")
-        
+        table.execute(f"exec ap_update_rule @Rule_guid = '',@Rule_Type_Id = '{body['first_id']['Rule_Type_Id']}',@Rule_Description = '{body['first_id']['Rule_Description']}',@Rule_Sub_Type_Id = '{body['first_id']['Rule_Sub_Type_Id']}',@No_Offer = '{body['first_id']['No_Offer']}',@Run_Frequency = '{body['first_id']['Run_Frequency']}',@Start_Date = '{body['first_id']['Start_Date']}',@End_Date = '{body['first_id']['End_Date']}',@Rule_Notification_Email = '{body['first_id']['Rule_Notification_Email']}',@Approval_Required = '{body['first_id']['Approval_Required']}',@Push_Message = '{body['first_id']['Push_Message']}',@Push_Time = '{body['first_id']['Push_Time']}',@Notify_Admin_Post_Run = '{body['first_id']['Notify_Admin_Post_Run']}',@Update_Group_Stats = '{body['first_id']['Update_Group_Stats']}',@RSAClientID = '{body['first_id']['RSAClientID']}',@RSAClientGuid = '{body['first_id']['RSAClientGuid']}',@Rule_Status = '{body['first_id']['Rule_Status']}',@Created_By = '{body['first_id']['Created_By']}'")
         headers = [x[0] for x in table.description]
         result = table.fetchall()
         conn.commit()
@@ -120,6 +106,7 @@ def savecustomersdata(body):
         return buildResponse(200,requestbody)
     except:
         logger.exception('Do your custom error handling here')
+        
         table.execute(f"exec ap_delete_rule @Rule_guid = '{guid}',@Created_by = '{body['first_id']['Created_By']}'") 
         conn.commit()
         
@@ -145,7 +132,23 @@ def modifycustomersdata(ruleid,ruleguid,ruletypeid,subtypeid,ruledescription,sta
         table.execute(f"exec ap_delete_rule @Rule_guid = '{ruleguid}',@Created_by = '{createdby}'") 
         conn.commit()
         return buildResponse(404,'Insert has been Failed!')
-    
+
+def deletecustomersdata(guid,create):
+    try:
+        table.execute(f"exec ap_delete_rule @Rule_guid = '{guid}',@Created_by = '{create}'")
+        conn.commit()
+        
+        body = {
+            'operation':'DELETE',
+            'Message':'SUCCESS'
+        }
+        return buildResponse(200,body)
+        
+    except:
+        logger.exception('Do your Custom handling here.')
+        return buildResponse(404,'Invalid values please check once again')
+        
+        
 def buildResponse(statusCode,body=None):
     response = {
         'statusCode':statusCode,
