@@ -1,1 +1,17 @@
-"this is my first merge to main branch"
+data = [
+			{
+				"RuleId": 78,
+				"RuleGuid": "660C9622-4109-45B6-A99C-9C716448C358",
+				"RuleTypeId": "1",
+				"SubTypeId": "8",
+				"RuleDescription": "co1"
+			},
+			{
+				"APRuleCrtiteriaId": 39,
+				"TierTypeId": "null",
+				"ApRuleId": 78
+			}
+		]
+
+ruleid = data[0]['RuleId']
+print(ruleid)
