@@ -1,156 +1,75 @@
-data = [
-			{
-				"RuleId": 78,
-				"RuleGuid": "660C9622-4109-45B6-A99C-9C716448C358",
-				"RuleTypeId": "1",
-				"SubTypeId": "8",
-				"RuleDescription": "co1"
-			},
-			{
-				"APRuleCrtiteriaId": 39,
-				"TierTypeId": "null",
-				"ApRuleId": 78
-			}
-		]
-
-ruleid = data[0]['RuleId']
-RuleGuid = data[0]['RuleGuid']
+import requests
 
 
+conn = "https://pfmfnfh7lrtqicmjeu4nmswqui0ikdwa.lambda-url.us-east-1.on.aws/query"
+query1 = {
 
-body = {
-		"name": "test rule",
-		"ruletype": 2,
-		"subruletype": 0,
-		"stores": [
-			"1",
-			"2",
-			"3"
-		],
-		"nooffer": 0,
-		"createOffer": 0,
-		"criteria": {
-			"in_last_days": 0,
-			"times_purchased": 0,
-			"amount_spend": 0,
-			"TopNshoppers": "0",
-			"zip_codes": [],
-			"departments": [],
-			"upcs": [],
-			"visits_containing_upcs": 1
-		},
-		"coupon": [
-			{
-				"name": "test coupon",
-				"frequency": "Weekly",
-				"offertype": 2,
-				"offerstart": 0,
-				"minamount": "0",
-				"minquantity": 0,
-				"reward_min_quantity": 0,
-				"rewardamount": "0.01",
-				"isdiscountpercentage": 0,
-				"purchaseupcs": [],
-				"rewardupcs": [],
-				"stores": [],
-				"departments": [],
-				"expirePrevCoupon": 0,
-				"isdow": 0,
-				"coupon_limit": 1,
-				"isfeaturecoupon": 0,
-				"includeinweeklyemail": 0,
-				"validityindays": 7,
-				"coupon_start_time": "00:00",
-				"coupon_end_time": "23:59",
-				"sendpushnotification": 0,
-				"message": "",
-				"time": "08:00",
-				"postfb": 0,
-				"fbmessage": "",
-				"fbtime": "09:00",
-				"sendsms": 0,
-				"smsmessage": "",
-				"smstime": "10:00",
-				"sendemail": 0,
-				"emailmessage": "",
-				"emailtime": "11:00"
-			}
-		],
-		"purchaseupcs": [
-			"4011",
-			"4012",
-			"4013"
-		],
-		"schedule": {
-			"frequency": "Weekly",
-			"startdate": "2022-12-28",
-			"enddate": "2023-03-03",
-			"email": "sai@gmail.com",
-			"approvalrequired": 1,
-			"notifyadminpostrun": 1,
-			"groupstatsupdate": 1,
-			"notifysuggestedoffers": 1
-		}
+		"Instance":"veritra",
+
+		"DB":"RSA_CentMark",
+
+		"Proc":"ap_get_rule_top_n_shoppers",
+
+		"Args":"0"
+
 	}
 
-
-# if 'criteria' not in body:
-#         print (400, "rule criteria is required")
-# if 'nooffer'  and 'coupon' not in body:
-#         print (400, "rule offer is required")
-# print("success")
-# print(body['coupon'][0]["name"])
-# for _ in body:
-# 	print(_)
+# query = f"exec ap_update_rule  'ruletype','name', 'subruletype', 'nooffer', 'frequency',1"
+query = "exec ap_get_rule 0"
+# query = "exec ap_get_rule_top_n_shoppers 0"
 
 
+def Accessdbdata(conn,query):
+		
+	try:
+		filterdata = []
+		for x in query.split():
+			if x == 'exec':
+				pass
+			elif x != 'exec':
+				filterdata.append(x)
+		proc_name = filterdata[0]
+		data = filterdata[1:]
+		
+		args_name = str(data).replace('[',"").replace(']',"")
+		body = {
 
-def AddRemove(NewList, ExistingList):
-    Add = [i for i in NewList if i not in ExistingList]
-    Remove = [i for i in ExistingList if i not in NewList]
-    print(f"Adding - {Add}")
-    print(f"Removing - {Remove}")
-    return Add, Remove
+		"Instance":"veritra",
 
-print(AddRemove(NewList=[], ExistingList=(['1'])))
-	
-# ExistingRuleOfferIDs = [str(i['ApRuleOfferId']) for i in coupon]
-# IncomingRuleOfferIDs = [str(i['ApRuleOfferId'])
-#                                 for i in body['coupon']]
+		"DB":"RSA_CentMark",
 
+		"Proc":proc_name,
 
-body = [
-	{
-		"first_id" :{
-		"Rule_Type_Id": 1,
-		"Rule_Description": "co1",
-		"Rule_Sub_Type_Id": 8,
-		"No_Offer": 1,
-		"Run_Frequency": "freqcy",
-		"Start_Date": "2022-05-16 04:35:13.000",
-		"End_Date": "2022-05-16 04:35:13.000",
-		"Rule_Notification_Email": "yadav@gmail.com",
-		"Approval_Required": 1,
-		"Push_Message": "message",
-		"Push_Time": "2022-05-16 04:35:13.000",
-		"Notify_Admin_Post_Run": 145,
-		"Update_Group_Stats": 2,
-		"RSAClientID": 125365,
-		"RSAClientGuid": 14589225,
-		"Rule_Status": 1,
-		"Created_By": 14588
-		},
-		"second_id":{
-			"In_Last_Days" : 4,
-			"Times_Purchased" : 3,
-			"Amount_Spend" : 75,
-			"TopNCustomers" : 5,
-			"ZipCodeList" :"12456",
-			"Is_Tier_Based": 1,
-			"Tier_Name" : "kum",
-			"Rule_Criteria_Status" : 1,
-			"Created_By" : 14553
-		}
+		"Args":args_name
+
 	}
-]
-# print(body[0]['first_id']['Created_By'])
+
+		response = requests.post(conn,json=body)
+		return response.status_code, response.text
+	except:
+		return False
+print(Accessdbdata(conn,query))
+
+
+
+# def AccessDBData(conn, query):
+#     cursor = conn.cursor(as_dict=True)
+#     log.info(f"--Running query - {query}")
+#     try:
+#         # cursor.execute("update brand set name = 'McD' OUTPUT inserted.id where company_id = 2;")
+#         cursor.execute(f"{query};")
+#         row = cursor.fetchall()
+#         if cursor.rowcount > 0:
+#             conn.commit()
+#             log.info(f"--Query results - {row}")
+#             # row is list of results(json)
+#             return row
+#         return []
+#     except pymssql.OperationalError as e:
+#         log.error(f"--DB insertion/update/delete Error - {e}")
+#         return False
+#     except pymssql.Error as e:
+#         log.error(f"--DB insertion/update/delete Error - {e}")
+#         cursor.execute("ROLLBACK;")
+#         conn.rollback()
+#         return False
