@@ -1,23 +1,21 @@
 import json
 import pymssql
 import logging
-
+import os
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 cust = "/customersdata"
 
-
-
 conn = pymssql.connect(
-            server='database-1.cxrjyosgnij0.ap-south-1.rds.amazonaws.com', 
-            user='admin', 
-            password='Veritra2022', 
-            database='employeedata')
+            server= os.environ.get('SERVER'), 
+            user= os.environ.get('USER'),
+            password= os.environ.get('PASSWORD'),
+            database= os.environ.get('DB')
+)
 
 table = conn.cursor()
-
 
 def lambda_handler(event,context):
     logger.info(event)
@@ -69,7 +67,9 @@ def getcustomersdata(Rule):
             var1 = (dict(zip(headers,res)))
             data1.append(var1) 
         conn.commit()
-        data2 = [data,data1]
+        
+        data2 = data + data1
+        
         
         return buildResponse(200,data2)
     except:
@@ -88,14 +88,16 @@ def savecustomersdata(body):
             id1 = aprul['RuleId']
             guid = aprul['RuleGuid']
 
-        table.execute(f"exec ap_update_rule_criteria @Rule_Criteria_Id= '{body['second_id']['Rule_Criteria_Id']}',@Rule_Id = {id1},@In_Last_Days = {body['second_id']['In_Last_Days']},@Times_Purchased ={body['second_id']['Times_Purchased']},@Amount_Spend ='{body['second_id']['Amount_Spend']}',@TopNCustomers = '{body['second_id']['TopNCustomers']}',@ZipCodeList = {body['second_id']['ZipCodeList']},@Is_Tier_Based= {body['second_id']['Is_Tier_Based']},@Tier_Name = {body['second_id']['Tier_Name']},@Rule_Criteria_Status = {body['second_id']['Rule_Criteria_Status']},@Created_By = '{body['second_id']['Created_By']}'") 
+        table.execute(f"exec ap_update_rule_criteria @Rule_Criteria_Id= '',@Rule_Id = {id1},@In_Last_Days = {body['second_id']['In_Last_Days']},@Times_Purchased ={body['second_id']['Times_Purchased']},@Amount_Spend ='{body['second_id']['Amount_Spend']}',@TopNCustomers = '{body['second_id']['TopNCustomers']}',@ZipCodeList = {body['second_id']['ZipCodeList']},@Is_Tier_Based= {body['second_id']['Is_Tier_Based']},@Tier_Name = {body['second_id']['Tier_Name']},@Rule_Criteria_Status = {body['second_id']['Rule_Criteria_Status']},@Created_By = '{body['second_id']['Created_By']}'") 
         headers = [x[0] for x in table.description]
         result1 = table.fetchall()
         conn.commit()
-
+        
         for res1 in result1:
             apcri = (dict(zip(headers,res1)))
+            
         data = (aprul,apcri)
+        
         
         requestbody = {
             'Operation': 'SAVE',
