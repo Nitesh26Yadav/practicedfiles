@@ -1,27 +1,16 @@
 import requests
-import json
+import os
 
-conn = "https://pfmfnfh7lrtqicmjeu4nmswqui0ikdwa.lambda-url.us-east-1.on.aws/query"
-# print(conn)
-# query1 = {
+conn = os.environ.get("API")
+guid = 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298'
+UID = 1
+RuleId = 1
 
-# 		"Instance":"veritra",
+query = f"exec ap_get_rule '{guid}', {UID}"
+query = f"exec ap_get_rule_stores {RuleId}"
 
-# 		"DB":"RSA_CentMark",
+def Accessdbdata(conn,query):  
 
-# 		"Proc":"ap_get_rule_top_n_shoppers",
-
-# 		"Args":"0"
-
-# 	}
-
-# query = f"exec ap_update_rule  'ruletype','name', 'subruletype', 'nooffer', 'frequency',1"
-# query = "exec ap_get_rule 0"
-query = "exec ap_get_rule_top_n_shoppers 0"
-
-
-def Accessdbdata(conn,query):
-		
 	try:
 		filterdata = []
 		for x in query.split():
@@ -31,32 +20,34 @@ def Accessdbdata(conn,query):
 				filterdata.append(x)
 		proc_name = filterdata[0]
 		data = filterdata[1:]
-		
-		args_name = str(data).replace('[','').replace(']','')
+
+		name = ""
+		args_name = name.join(data)
+
 		body = {
 
 		"Instance":"veritra",
 
 		"DB":"RSA_CentMark",
 
-		"Proc":proc_name,
+		"Proc": proc_name,
 
-		"Args":args_name
+		"Args": args_name
+	
+		}
 
-	}
 		response = requests.post(conn,json = body)
-		rules = json.loads(response.text)
-		
+		# print(proc_name)
+		# print(args_name)
+
+		rules = response.json()
 		return rules['Message']
+
 	except:
 		return False
+
 data = Accessdbdata(conn,query)
-
-
 print(data)
-
-
-
 
 
 

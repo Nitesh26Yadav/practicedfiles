@@ -4,21 +4,41 @@ import os
 
 # conn = "https://0ry7jslpr3.execute-api.us-east-1.amazonaws.com/dev/rule"
 conn = os.environ.get("API")
-query = "exec ap_get_rule_top_n_shoppers 0"
 guid = 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298'
-UID = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySUQiOjEwMSwiaXNfY29uc2VudF9wcm92aWRlZCI6dHJ1ZSwidXNlcm5hbWUiOiJkZW1vdXNlckBhdXRvcGlsb3QuY29tIiwidXNlcl9ndWlkIjoiN0UyOTExMDUtRDQyNy00QTRDLThGOEMtMUE5MUFCOUY3QTMzIiwiZmlyc3RfbmFtZSI6IkpvaG4iLCJsYXN0X25hbWUiOiJGYXJtcyIsInJldGFpbGVyIjp7ImlkIjo0OCwic2NvcGVzIjpbXX0sImV4cGlyZXNfaW4iOiIyMDIyLTAzLTA1IDE4OjQ3OjIzLjQyMjI2MCJ9.EhC9HR6vgi0dqmD24TpDpe4FEee1VT4p311zHACDk8k'
-
+UID = 1
 # query = f"exec ap_get_rule {guid}, {UID}"
 
-# data = []
+
+
+
+# filterdata = []
 # for x in query.split():
 # 	if x == 'exec':
-# 			pass
+# 		pass
 # 	elif x != 'exec':
-# 			data.append(x)
+# 		filterdata.append(x)
+# proc_name = filterdata[0]
+# data = filterdata[1:]
+
+# args_name = str(data).replace('[','').replace(']','')
+# print(args_name)
 
 
-def Accessdbdata(conn,query):
+# query = "exec ap_get_rule_stores 1"
+# query = f"exec ap_get_rule 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298',1"
+# print(query)
+# query = "exec ap_get_rule F36DF97E-F80C-44C1-A64F-6BE5D07FD298 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySUQiOjEwMSwiaXNfY29uc2VudF9wcm92aWRlZCI6dHJ1ZSwidXNlcm5hbWUiOiJkZW1vdXNlckBhdXRvcGlsb3QuY29tIiwidXNlcl9ndWlkIjoiN0UyOTExMDUtRDQyNy00QTRDLThGOEMtMUE5MUFCOUY3QTMzIiwiZmlyc3RfbmFtZSI6IkpvaG4iLCJsYXN0X25hbWUiOiJGYXJtcyIsInJldGFpbGVyIjp7ImlkIjo0OCwic2NvcGVzIjpbXX0sImV4cGlyZXNfaW4iOiIyMDIyLTAzLTA1IDE4OjQ3OjIzLjQyMjI2MCJ9.EhC9HR6vgi0dqmD24TpDpe4FEee1VT4p311zHACDk8k"
+# query =  f"exec ap_get_rule '{guid}',{UID}"
+
+# query = "exec ap_update_rule_departments"
+
+# query = "exec ap_update_rule_offer 0 "
+# # query = "exec ap_update_rule ''
+query = "exec ap_get_rule_top_n_shoppers 0"
+
+# print(type("'F36DF97E-F80C-44C1-A64F-6BE5D07FD298',1"))
+
+def Accessdbdata(conn,query):  
 
 	try:
 		filterdata = []
@@ -28,41 +48,28 @@ def Accessdbdata(conn,query):
 			elif x != 'exec':
 				filterdata.append(x)
 		proc_name = filterdata[0]
+		# print(proc_name)
 		data = filterdata[1:]
-		
-		args_name = str(data).replace('[','').replace(']','')
+		# print(data)
+
+		name = ""
+		args_name = name.join(data)
+		# print(args_name)
 		body = {
 
 		"Instance":"veritra",
 
 		"DB":"RSA_CentMark",
 
-		"Proc":proc_name,
+		"Proc": proc_name,
 
-		"Args":args_name
-
+		"Args": args_name
+	
 		}
 		response = requests.post(conn,json = body)
-		# if not response:
-		# 	print("hcvasgbdx")
-		# if not response:
-		# 	data = []
-		# 	for x in query.split():
-		# 		if x == 'exec':
-		# 				pass
-		# 		elif x != 'exec':
-		# 				data.append(x)
+		# print(proc_name)
+		# print(args_name)
 
-
-		# 	Gui = data[1]
-		# 	idi = data[2]
-
-		# 	headers = {
-				
-		# 		'Authorization': idi
-		# 	}
-		# 	response = requests.get(f'{conn}/{Gui}',headers = headers)	
-		
 		rules = response.json()
 		return rules['Message']
 
@@ -70,19 +77,75 @@ def Accessdbdata(conn,query):
 		return False
 
 data = Accessdbdata(conn,query)
-
-# data = Accessdbdata(conn = "https://0ry7jslpr3.execute-api.us-east-1.amazonaws.com/dev/rule",query = f"exec ap_get_rule {guid}, {UID}" )
 print(data)
 
 
-response = requests.post(url = conn,json={
 
-    "Instance":"veritra",
 
-    "DB":"RSA_CentMark",
 
-    "Proc":"ap_get_rule_top_n_shoppers",
+		# "Instance":"veritra",
 
-    "Args":"0"
+		# "DB":"RSA_CentMark",
 
-})
+		# "Proc":"ap_get_rule",
+
+		# "Args":"F36DF97E-F80C-44C1-A64F-6BE5D07FD298, eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySUQiOjEwMSwiaXNfY29uc2VudF9wcm92aWRlZCI6dHJ1ZSwidXNlcm5hbWUiOiJkZW1vdXNlckBhdXRvcGlsb3QuY29tIiwidXNlcl9ndWlkIjoiN0UyOTExMDUtRDQyNy00QTRDLThGOEMtMUE5MUFCOUY3QTMzIiwiZmlyc3RfbmFtZSI6IkpvaG4iLCJsYXN0X25hbWUiOiJGYXJtcyIsInJldGFpbGVyIjp7ImlkIjo0OCwic2NvcGVzIjpbXX0sImV4cGlyZXNfaW4iOiIyMDIyLTAzLTA1IDE4OjQ3OjIzLjQyMjI2MCJ9.EhC9HR6vgi0dqmD24TpDpe4FEee1VT4p311zHACDk8k".split(',')
+
+
+
+# response = requests.post(conn,json={
+
+#     "Instance":"veritra",
+
+#     "DB":"RSA_CentMark",
+
+#     "Proc":"ap_get_rule_top_n_shoppers",
+
+#     "Args":"0"
+
+# })
+
+
+
+# filterdata = ""
+
+# for x in query.split():
+# 	if x == 'exec':
+# 		pass
+# 	elif x != 'exec':
+# 		filterdata = filterdata +" "+ str(x)
+
+# data = filterdata.replace(' ',',')
+# data1 = data.strip(",")
+
+# print(data1)
+
+
+
+# filterdata = []
+# for x in query.split():
+# 	if x == 'exec':
+# 		pass
+# 	elif x != 'exec':
+# 		filterdata.append(x)
+# proc_name = filterdata[0]
+# data = filterdata[1:]
+# # print(data)
+
+# args_name = str(data).strip('[,]')
+
+query = f"exec ap_get_rule 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298',1"
+filterdata = []
+for x in query.split():
+	if x == 'exec':
+		pass
+	elif x != 'exec':
+		filterdata.append(x)
+proc_name = filterdata[0]
+# print(proc_name)
+data = filterdata[1:]
+# print(data)
+
+args_name = ""
+name = args_name.join(data)
+print(name)

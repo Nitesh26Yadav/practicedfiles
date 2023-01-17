@@ -100,3 +100,20 @@ print(AccessDBData(conn,query))
 		# 	}
 		# 	response = requests.request('GET',f'{conn}/{guid}',headers = headers)
 		# 	rules = response.json()
+
+
+
+
+		# if 'get' in proc_name:
+		# 	body = {
+
+		# 	"Instance":"veritra",
+
+		# 	"DB":"RSA_CentMark",
+
+		# 	"Proc":proc_name,
+
+		# 	"Args":args_name
+
+		# 	}
+		

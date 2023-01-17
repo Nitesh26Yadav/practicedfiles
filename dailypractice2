@@ -1,5 +1,5 @@
 import requests
-
+import os
 
 # conn = "https://0ry7jslpr3.execute-api.us-east-1.amazonaws.com/dev/rule"
 # conn = "https://pfmfnfh7lrtqicmjeu4nmswqui0ikdwa.lambda-url.us-east-1.on.aws/query"
@@ -8,7 +8,7 @@ guid = 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298'
 UID = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySUQiOjEwMSwiaXNfY29uc2VudF9wcm92aWRlZCI6dHJ1ZSwidXNlcm5hbWUiOiJkZW1vdXNlckBhdXRvcGlsb3QuY29tIiwidXNlcl9ndWlkIjoiN0UyOTExMDUtRDQyNy00QTRDLThGOEMtMUE5MUFCOUY3QTMzIiwiZmlyc3RfbmFtZSI6IkpvaG4iLCJsYXN0X25hbWUiOiJGYXJtcyIsInJldGFpbGVyIjp7ImlkIjo0OCwic2NvcGVzIjpbXX0sImV4cGlyZXNfaW4iOiIyMDIyLTAzLTA1IDE4OjQ3OjIzLjQyMjI2MCJ9.EhC9HR6vgi0dqmD24TpDpe4FEee1VT4p311zHACDk8k'
 
 # query = f"exec ap_get_rule {guid}, {UID}"
-
+# conn = os.environ.get("API")
 # data = []
 # for x in query.split():
 # 	if x == 'exec':
@@ -18,7 +18,7 @@ UID = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySUQiOjEwMSwiaXNfY29uc2VudF9w
 
 
 def Accessdbdata(conn,query):
-
+	conn = os.environ.get("API")
 	try:
 		filterdata = []
 		for x in query.split():
@@ -30,6 +30,7 @@ def Accessdbdata(conn,query):
 		data = filterdata[1:]
 		
 		args_name = str(data).replace('[','').replace(']','')
+		
 		body = {
 
 		"Instance":"veritra",
