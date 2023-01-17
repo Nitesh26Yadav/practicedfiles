@@ -22,8 +22,8 @@ response = s3_client.put_object(
     Bucket='nitesh.practice',
     Key='rs'
 )
-#res=response.get('ResponseMetadata',{}).get('HTTPStatusCode')
-#print(res)
+res=response.get('ResponseMetadata',{}).get('HTTPStatusCode')
+print(res)
 
 #response['day']=['monday']
 #print(response)

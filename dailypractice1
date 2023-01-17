@@ -1,1 +1,84 @@
-"this is my first merge to main branch"
+import requests
+import os
+
+conn = os.environ.get("API")
+guid = 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298'
+UID = 1
+RuleId = 1
+
+query = f"exec ap_get_rule '{guid}', {UID}"
+query = f"exec ap_get_rule_stores {RuleId}"
+
+def Accessdbdata(conn,query):  
+
+	try:
+		filterdata = []
+		for x in query.split():
+			if x == 'exec':
+				pass
+			elif x != 'exec':
+				filterdata.append(x)
+		proc_name = filterdata[0]
+		data = filterdata[1:]
+
+		name = ""
+		args_name = name.join(data)
+
+		body = {
+
+		"Instance":"veritra",
+
+		"DB":"RSA_CentMark",
+
+		"Proc": proc_name,
+
+		"Args": args_name
+	
+		}
+
+		response = requests.post(conn,json = body)
+		# print(proc_name)
+		# print(args_name)
+
+		rules = response.json()
+		return rules['Message']
+
+	except:
+		return False
+
+data = Accessdbdata(conn,query)
+print(data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def AccessDBData(conn, query):
+#     cursor = conn.cursor(as_dict=True)
+#     log.info(f"--Running query - {query}")
+#     try:
+#         # cursor.execute("update brand set name = 'McD' OUTPUT inserted.id where company_id = 2;")
+#         cursor.execute(f"{query};")
+#         row = cursor.fetchall()
+#         if cursor.rowcount > 0:
+#             conn.commit()
+#             log.info(f"--Query results - {row}")
+#             # row is list of results(json)
+#             return row
+#         return []
+#     except pymssql.OperationalError as e:
+#         log.error(f"--DB insertion/update/delete Error - {e}")
+#         return False
+#     except pymssql.Error as e:
+#         log.error(f"--DB insertion/update/delete Error - {e}")
+#         cursor.execute("ROLLBACK;")
+#         conn.rollback()
+#         return False

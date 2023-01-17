@@ -1,1 +1,119 @@
-testing
+import logging
+import pymssql
+import os
+
+log = logging.getLogger()
+log.setLevel(logging.INFO)
+
+
+def ConnectDB():
+    SERVER = os.environ.get('SERVER')
+    USER = os.environ.get('USER')
+    PASSWORD = os.environ.get('PASSWORD')
+    DB = os.environ.get('DB')
+    try:
+        conn = pymssql.connect(server=SERVER, user=USER,
+                               password=PASSWORD, database=DB)
+        log.info("--DB Connected")
+        return conn
+    except pymssql.Error as e:
+        log.error(f"--DB Connection Error - {e}")
+        return (500, "Something went wrong, Please try again")
+
+
+query = 'exec ap_get_rule_top_n_shoppers 0'
+conn = ConnectDB()
+
+def AccessDBData(conn, query):
+    cursor = conn.cursor(as_dict=True)
+    log.info(f"--Running query - {query}")
+    try:
+        # cursor.execute("update brand set name = 'McD' OUTPUT inserted.id where company_id = 2;")
+        cursor.execute(f"{query};")
+        row = cursor.fetchall()
+        if cursor.rowcount > 0:
+            conn.commit()
+            log.info(f"--Query results - {row}")
+            # row is list of results(json)
+            return row
+        return []
+    except pymssql.OperationalError as e:
+        log.error(f"--DB insertion/update/delete Error - {e}")
+        return False
+    except pymssql.Error as e:
+        log.error(f"--DB insertion/update/delete Error - {e}")
+        cursor.execute("ROLLBACK;")
+        conn.rollback()
+        return False
+print(AccessDBData(conn,query))
+
+
+
+
+
+	# try:
+		# if method == 'POST':
+		# 	conn = "https://pfmfnfh7lrtqicmjeu4nmswqui0ikdwa.lambda-url.us-east-1.on.aws/query"
+		# 	filterdata = []
+		# 	for x in query.split():
+		# 		if x == 'exec':
+		# 			pass
+		# 		elif x != 'exec':
+		# 			filterdata.append(x)
+		# 	proc_name = filterdata[0]
+		# 	data = filterdata[1:]
+			
+		# 	args_name = str(data).replace('[','').replace(']','')
+		# 	body = {
+
+		# 	"Instance":"veritra",
+
+		# 	"DB":"RSA_CentMark",
+
+		# 	"Proc":proc_name,
+
+		# 	"Args":args_name
+
+		# 	}
+		# 	response = requests.post(conn,json = body)
+		# 	rules = response.json()
+
+
+
+		# elif method == 'GET':
+		# 	conn = "https://0ry7jslpr3.execute-api.us-east-1.amazonaws.com/dev/rule"
+
+		# 	uid = []
+		# 	data = []
+		# 	for x in query.split():
+		# 		if x == 'exec':
+		# 			pass
+		# 		elif x != 'exec':
+		# 			data.append(x)
+
+		# 	guid = data[1]
+		# 	uid = data[2]
+
+		# 	headers = {
+
+		# 		'Authorization': uid
+		# 	}
+		# 	response = requests.request('GET',f'{conn}/{guid}',headers = headers)
+		# 	rules = response.json()
+
+
+
+
+		# if 'get' in proc_name:
+		# 	body = {
+
+		# 	"Instance":"veritra",
+
+		# 	"DB":"RSA_CentMark",
+
+		# 	"Proc":proc_name,
+
+		# 	"Args":args_name
+
+		# 	}
+		
