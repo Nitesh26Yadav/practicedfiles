@@ -6,33 +6,43 @@ guid = 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298'
 UID = 1
 RuleId = 1
 
-query = f"exec ap_get_rule '{guid}', {UID}"
 # query = f"exec ap_get_rule_stores {RuleId}"
-
+# query = "exec ap_get_rule_top_n_shoppers 0"
+query = f"exec ap_get_rule '{guid}', {UID}"
 
 conn = os.environ.get("API")
-def Accessdbdata(conn,query):  
 
+def Accessdbdata(conn,query):  
 	try:
 		filterdata = query.split()
-		proc_name = filterdata[1]
+		exec_name = filterdata[0]
 		
 		name = ""
-		args_name = name.join(filterdata[2:])
+		if exec_name == 'exec':
+			proc_name = filterdata[1]
+			args_name = name.join(filterdata[2:])
+
+		elif exec_name != 'exec':
+			proc_name = filterdata[0] 
+			args_name = name.join(filterdata[1:])
+			
+		proc = proc_name
+		args = args_name
 		
 		body = {
 
-		"Instance":"veritra",
+			"Instance":"veritra",
 
-		"DB":"RSA_CentMark",
+			"DB":"RSA_CentMark",
 
-		"Proc": proc_name,
+			"Proc": proc,
 
-		"Args": args_name
+			"Args": args
 	
 		}
 
 		response = requests.post(conn,json = body)
+
 		rules = response.json()
 		return rules['Message']
 
