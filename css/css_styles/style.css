@@ -1,4 +1,58 @@
 h1{
 
     color:black;
+    background-color: lightblue;
+    /* border: 5px red solid; */
+    border-bottom: 5px red solid;
 }
+
+body{
+
+    background-color:lightblue(10, 248, 236);
+    border: 5px red solid;
+    color: black;
+
+    /* font-family: Arial, Helvetica, sans-serif;
+    font-size: medium;
+    font-weight: 400; */ 
+
+    /* short code for above three lines: */
+   font: normal medium Arial, Helvetica, sans-serif; 
+
+   line-height: 2;
+    margin-top: auto;
+    margin-left: 10;
+    margin-right: 0;
+
+}
+
+.box-1{
+    background-color: cornsilk;
+    width: fit-content;
+    padding: 10;
+    margin-left: 0%;
+    
+}
+
+.head{
+    background-color:calc();
+}
+
+.container{
+    width: 500px;
+    margin:auto;
+    margin-left: 0%;
+}
+
+.box-2{
+    width: max-content;
+    padding-right: 10;
+    padding-left: 10;
+    
+    margin-left: 0;
+    /* margin: 5px,10px,5px,10px; */
+    background-color: lightblue;
+    color:black;
+
+}
+
