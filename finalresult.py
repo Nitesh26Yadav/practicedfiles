@@ -14,6 +14,9 @@ RuleGuid = 'D3D099BE-A9DA-4924-A5BF-9ABC644F29BF'
 # clientId = 1
 # clientGuid =  '0C2BCC44-5C2B-4904-8B3F-755C57B488BC'
 
+# query = f"exec ap_get_rule_criteria {RuleId}"
+# db = os.environ.get("DB")
+# instance = os.environ.get("Instance")
 
 def ConnectDB():
 	try:
@@ -21,12 +24,12 @@ def ConnectDB():
 		return conn
 	except:
 		return ("Something went wrong in Api")
-conn = ConnectDB()
-
-query = f"exec ap_get_rule_criteria {RuleId}"
 
 
-def Accessdbdata(conn,query):  
+
+def AccessDBData(conn,query):  
+	db = os.environ.get("DB")
+	instance = os.environ.get("Instance")
 	try:
 		filterdata = query.split()
 		exec_name = filterdata[0]
@@ -45,9 +48,9 @@ def Accessdbdata(conn,query):
 		
 		body = {
 
-			"Instance":"veritra",
+			"Instance":instance,
 
-			"DB":"RSA_CentMark",
+			"DB":db,
 
 			"Proc": proc,
 
@@ -62,4 +65,7 @@ def Accessdbdata(conn,query):
 
 	except:
 		return False
-print(Accessdbdata(conn,query))
+
+# print(Accessdbdata(conn,query))
+# print(instance)
+# print(db)
