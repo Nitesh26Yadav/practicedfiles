@@ -1,0 +1,9 @@
+import csv
+import pandas as pd
+
+excel_file = pd.read_excel(
+    "C:\\Users\\rsa-l\\Downloads\\Trucommerce_ad_price_crump-foods_20210323.csv")
+# print(excel_file)
+excel_file.to_csv(
+    "Trucommerce_ad_price_crump-foods_20210323.csv", index=None, header=True)
+print(excel_file)
