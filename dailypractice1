@@ -1,65 +1,71 @@
-import requests
-import os
+# import requests
+# import os
+import json
+# conn = os.environ.get("API")
+# guid = 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298'
+# UID = 1
+# RuleId = 1
 
-conn = os.environ.get("API")
-guid = 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298'
-UID = 1
-RuleId = 1
+# query = f"exec ap_get_rule '{guid}', {UID}"
+# query = f"exec ap_get_rule_stores {RuleId}"
 
-query = f"exec ap_get_rule '{guid}', {UID}"
-query = f"exec ap_get_rule_stores {RuleId}"
+# def Accessdbdata(conn,query):
 
-def Accessdbdata(conn,query):  
+# 	try:
+# 		filterdata = []
+# 		for x in query.split():
+# 			if x == 'exec':
+# 				pass
+# 			elif x != 'exec':
+# 				filterdata.append(x)
+# 		proc_name = filterdata[0]
+# 		data = filterdata[1:]
 
-	try:
-		filterdata = []
-		for x in query.split():
-			if x == 'exec':
-				pass
-			elif x != 'exec':
-				filterdata.append(x)
-		proc_name = filterdata[0]
-		data = filterdata[1:]
+# 		name = ""
+# 		args_name = name.join(data)
 
-		name = ""
-		args_name = name.join(data)
+# 		body = {
 
-		body = {
+# 		"Instance":"veritra",
 
-		"Instance":"veritra",
+# 		"DB":"RSA_CentMark",
 
-		"DB":"RSA_CentMark",
+# 		"Proc": proc_name,
 
-		"Proc": proc_name,
+# 		"Args": args_name
 
-		"Args": args_name
-	
-		}
+# 		}
 
-		response = requests.post(conn,json = body)
-		# print(proc_name)
-		# print(args_name)
+# 		response = requests.post(conn,json = body)
+# 		# print(proc_name)
+# 		# print(args_name)
 
-		rules = response.json()
-		return rules['Message']
+# 		rules = response.json()
+# 		return rules['Message']
 
-	except:
-		return False
+# 	except:
+# 		return False
 
-data = Accessdbdata(conn,query)
-print(data)
+# data = Accessdbdata(conn,query)
+# print(data)
 
+# event = {
+#     "AccountId": "",
+#     "FIRSTNAME": "NITESH",
+#     "LASTNAME": "YADAV",
+#     "MOBILENUMBER": 9110514052,
+#     "EMAIL": "abc@gmail.com",
+#     "ADDRESS": "manikonda",
+#     "PIN": 1604
+# }
 
-
-
-
-
-
-
-
-
+# data = json.dumps(event)
+# body = json.loads(data)
 
 
+# cursor.execute(
+#     f"exec update_bank_data @AccountId='', @FIRSTNAME='{body['FIRSTNAME']}', @LASTNAME='{body['LASTNAME']}', @MOBILENUMBER={body['MOBILENUMBER']}, @EMAIL = '{body['EMAIL']}',@ADDRESS='{body['ADDRESS']}',@PIN = {body['PIN']}")
+# conn.commit()
 
 # def AccessDBData(conn, query):
 #     cursor = conn.cursor(as_dict=True)
@@ -82,3 +88,36 @@ print(data)
 #         cursor.execute("ROLLBACK;")
 #         conn.rollback()
 #         return False
+
+import boto3
+import requests
+
+msg = list(map(int, ("10", "20", "30", "40", "50")))
+# print(msg)
+
+
+response1 = requests.get(
+    " https://0jpo6xtx8k.execute-api.ap-south-1.amazonaws.com/data/employee_results")
+data = response1.text
+
+
+result = json.loads(data)
+body_data = result['body']['employeeids']
+
+
+final_res = list(map(dict, body_data))
+
+
+def body(final_res):
+
+    qname = 'first_queue'
+    store = boto3.client('sqs')
+    response = store.send_message(
+        QueueUrl=f'https://sqs.ap-south-1.amazonaws.com/206239526750/{qname}',
+        MessageBody=json.dumps(final_res),
+    )
+
+
+for res in final_res:
+    if isinstance(res, dict):
+        result = body(res)
