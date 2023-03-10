@@ -105,25 +105,25 @@ def deposit():
     return Account_details
 
 
-Account_details = deposit() 
+Account_details = deposit()
 
 data = user_details + Account_details
 
 print(data)
 
 
-def login():
-    cred = ""
-    first_name = input("Enter your Firstname: ")
-    cred = cred + " " + first_name
-    last_name = input("Enter your Last_name: ")
-    cred = cred + " " + last_name
-    Account_no = input("Enter your AccountNo: ")
-    cred = cred + " ," + Account_no
-    Password = input("Enter your password: ")
-    cred = cred + " ," + Password
+# def login():
+#     cred = ""
+#     first_name = input("Enter your Firstname: ")
+#     cred = cred + " " + first_name
+#     last_name = input("Enter your Last_name: ")
+#     cred = cred + " " + last_name
+#     Account_no = input("Enter your AccountNo: ")
+#     cred = cred + " ," + Account_no
+#     Password = input("Enter your password: ")
+#     cred = cred + " ," + Password
 
-    return cred
+#     return cred
 
 
 # print(login())

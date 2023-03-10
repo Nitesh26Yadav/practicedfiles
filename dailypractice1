@@ -103,7 +103,7 @@ data = response1.text
 
 result = json.loads(data)
 body_data = result['body']['employeeids']
-
+# print(body_data)
 
 final_res = list(map(dict, body_data))
 
@@ -117,6 +117,10 @@ def body(final_res):
         MessageBody=json.dumps(final_res),
     )
 
+    return (response)
+
+
+print(body(final_res))
 
 for res in final_res:
     if isinstance(res, dict):

@@ -1,87 +1,11 @@
-import requests
-import os
+# import phonenumbers
+# from phonenumbers import geocoder, timezone, carrier
 
+# phonenumber1 = phonenumbers.parse("+919966104006")
 
-guid = 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298'
-UID = 1
-RuleId = 1
+# print(geocoder.description_for_number(phonenumber1, "en"))
+# print(timezone.time_zones_for_geographical_number(phonenumber1))
+# print(carrier.name_for_number(phonenumber1, "en"))
 
-query = f"exec ap_get_rule '{guid}', {UID}"
-query = f"exec ap_get_rule_stores {RuleId}"
-
-
-conn = os.environ.get("API")
-def Accessdbdata(conn,query):  
-	try:
-		filterdata = query.split()
-		exec_name = filterdata[0]
-		
-		name = ""
-		if exec_name == 'exec':
-			proc_name = filterdata[1]
-			args_name = name.join(filterdata[2:])
-
-		elif exec_name != 'exec':
-			proc_name = filterdata[0] 
-			args_name = name.join(filterdata[1:])
-			
-		proc = proc_name
-		args = args_name
-		
-		body = {
-
-			"Instance":"veritra",
-
-			"DB":"RSA_CentMark",
-
-			"Proc": proc,
-
-			"Args": args
-	
-		}
-
-		response = requests.post(conn,json = body)
-
-		rules = response.json()
-		return rules['Message']
-
-	except:
-		return False
-
-# def Accessdbdata(conn,query):  
-
-# 	try:
-# 		filterdata = []
-# 		for x in query.split():
-# 			if x == 'exec':
-# 				pass
-# 			elif x != 'exec':
-# 				filterdata.append(x)
-# 		proc_name = filterdata[0]
-# 		data = filterdata[1:]
-
-# 		name = ""
-# 		args_name = name.join(data)
-
-# 		body = {
-
-# 		"Instance":"veritra",
-
-# 		"DB":"RSA_CentMark",
-
-# 		"Proc": proc_name,
-
-# 		"Args": args_name
-	
-# 		}
-
-# 		response = requests.post(conn,json = body)
-# 		rules = response.json()
-# 		return rules['Message']
-
-# 	except:
-# 		return False
-
-# data = Accessdbdata(conn,query)
-# print(data)
-
+msg = list(map(int, ("10", "20", "30", "40", "50")))
+print(msg)

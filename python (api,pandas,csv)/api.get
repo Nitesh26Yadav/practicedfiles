@@ -1,5 +1,4 @@
-from urllib import response
 import requests
 
 response = requests.get('https://www.boredapi.com/api/activity')
-print (response.text)
+print(response.text)
