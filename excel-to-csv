@@ -1,9 +1,67 @@
 import csv
 import pandas as pd
+import requests
+import json
 
-excel_file = pd.read_excel(
-    "C:\\Users\\rsa-l\\Downloads\\Trucommerce_ad_price_crump-foods_20210323.csv")
+
+# excel_file = pd.read_excel(
+#     "C:\\Users\\rsa-l\\Downloads\\Trucommerce_ad_price_crump-foods_20210323.csv")
+# # print(excel_file)
+# excel_file.to_csv(
+#     "Trucommerce_ad_price_crump-foods_20210323.csv", index=None, header=True)
 # print(excel_file)
-excel_file.to_csv(
-    "Trucommerce_ad_price_crump-foods_20210323.csv", index=None, header=True)
-print(excel_file)
+
+url = "https://okpricemart.grocerypundit.com/api/AogGetOrderDetailsToPOSFormat"
+body = {
+    "rsa_client_id": "181",
+    "clientStoreId": "1",
+    "member_number": "44674934368",
+    "ecomOrderId": "24389"
+}
+
+
+# def date(url, body):
+# response = requests.post(url, json=body)
+# rules = response.json()
+# result = rules['data']['updated_on']
+
+# data = result.split()
+# res = str(data).replace(',', "|")
+# return res
+
+
+# datetime = date(url, body)
+
+
+def get_data(url, body):
+
+    response = requests.post(url, json=body)
+    rules = response.json()
+    result = rules['data']['order_items']
+
+    return result
+
+
+file_to_json = get_data(url, body)
+
+print(file_to_json)
+# def json_to_csv(file_to_json):
+#     fields = []
+#     for keys, values in file_to_json[0].items():
+#         fields.append(keys)
+
+#     with open('finaldata.csv', 'w') as csvfile:
+#         writer = csv.DictWriter(csvfile, fieldnames=fields)
+#         writer.writeheader()
+#         writer.writerows(file_to_json)
+
+
+# print(json_to_csv(file_to_json))
+
+
+# df = pd.read_json(data)
+# # print(df.columns)
+# df.columns = df.columns.str.replace(',', '|')
+
+# df.to_csv('Ftp_file1.csv', sep='|', index=False)
+# print(df)
