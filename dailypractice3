@@ -1,151 +1,141 @@
+import boto3
 import requests
-import os
+import json
+import pandas as pd
+
+url = "https://okpricemart.grocerypundit.com/api/AogGetOrderDetailsToPOSFormat"
 
 
-# conn = "https://0ry7jslpr3.execute-api.us-east-1.amazonaws.com/dev/rule"
-conn = os.environ.get("API")
-guid = 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298'
-UID = 1
-# query = f"exec ap_get_rule {guid}, {UID}"
+def lambda_handler(event):
+    body = {
+        "rsa_client_id": "181",
+        "clientStoreId": "1",
+        "member_number": "44674934368",
+        "ecomOrderId": "24389"
+    }
+
+    s3 = boto3.client('s3',
+                      aws_access_key_id="AKIATABGVN5PEF4BS5PR",
+                      aws_secret_access_key="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")
+
+    # Getting data from url.
+    response = requests.post(url, json=body)
+    rules = response.json()
+    data = rules['data']
+
+    data1 = []
+
+    # Adding HDR data.
+    data1.append({
+        "Transaction Date": "2023-02-02",
+        "Transaction Time": "05:24:21",
+        "Transaction ID": data["order_id"],
+        "Record Type": "HDR",
+        "Version": "",
+        "Organization": "",
+        "Loyality": int(data["member_number"]),
+        "Tax ID": "",
+        "Tax ID State Code": "",
+        "Transaction Status": "",
+        "": ""
+    })
+    # Adding UPC data.
+    for i in data['order_items']:
+        data1.append({
+            "Transaction Date": "2023-02-02",
+            "Transaction Time": "05:24:21",
+            "Transaction ID": data["order_id"],
+            "Record Type": "UPC",
+            "Product Code": int(i['sku']),
+            "Retail Type": "L",
+            "Multiple": i['price'],
+            "Price": i['price'],
+            "Quantity": i['qty'],
+            "Weight": i['weight'],
+            "": ""
+        }
+        )
+    # print(data1)
+
+    # Adding CPN data.
+    # for i in data['getCouponList']:
+    #     data1.append({
+    #         "Transaction Date": "2023-02-02",
+    #         "Transaction Time": "05:24:21",
+    #         "Transaction ID": data["order_id"],
+    #         "Record Type": "CPN",
+    #         "Coupon Type": "",
+    #         "Coupon code": "",
+    #         "Amount": "",
+    #         "Dept Code": "",
+    #         "": "",
+    #         "": "",
+    #         "": ""
+    #     }
+    #     )
+    # Adding TND data.
+    data1.append({
+        "Transaction Date": "2023-02-02",
+        "Transaction Time": "05:24:21",
+        "Transaction ID": data["order_id"],
+        "Record Type": "TND",
+        "Media Code": data["payment_method_name"],
+        "Account Number": "",
+        "Tendered Amount": data["transaction_tax_amount"],
+        "": "",
+        "": "",
+        "": "",
+        "": ""
+
+    })
+    # Adding TAX data.
+    data1.append({
+        "Transaction Date": "2023-02-02",
+        "Transaction Time": "05:24:21",
+        "Transaction ID": data["order_id"],
+        "Record Type": "TAX",
+        "Tax Code": "",
+        "Tax Collected": data["transaction_tax_amount"],
+
+    }
+    )
+    count = len(data1)
+    # Adding FTR data.
+    data1.append({
+        "Transaction Date": "2023-02-02",
+        "Transaction Time": "05:24:21",
+        "Transaction ID": data["order_id"],
+        "Record Type": "FTR",
+        "Detail Count": count-1,
+        "Field3": "",
+        "Tax Total": data["transaction_tax_amount"],
+        "Transaction Total": data["transaction_total_amount"],
+    }
+    )
+    json_data = json.dumps(data1)
+
+    df = pd.read_json(json_data)
+    df.columns = df.columns.str.replace(',', '|')
+
+    # Converting Float to int even with Nan values in column.
+    df['Product Code'] = df['Product Code'].astype("Int64")
+    df['Loyality'] = df["Loyality"].astype("Int64")
+    df['Detail Count'] = df['Detail Count'].astype("Int64")
+
+    # converting dataframe to csv file.
+    df = df.to_csv(sep='|', index=False)
+    file_name = df.encode('utf-8')
+
+    # Adding file into S3 Bucket
+    response = s3.put_object(
+        Body=file_name,
+        Bucket="beginning.00",
+        Key="ftp_file.csv")
+
+    if response:
+        print("file uploaded")
+    else:
+        print("file is not uploaded")
 
 
-
-
-# filterdata = []
-# for x in query.split():
-# 	if x == 'exec':
-# 		pass
-# 	elif x != 'exec':
-# 		filterdata.append(x)
-# proc_name = filterdata[0]
-# data = filterdata[1:]
-
-# args_name = str(data).replace('[','').replace(']','')
-# print(args_name)
-
-
-# query = "exec ap_get_rule_stores 1"
-# query = f"exec ap_get_rule 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298',1"
-# print(query)
-# query = "exec ap_get_rule F36DF97E-F80C-44C1-A64F-6BE5D07FD298 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySUQiOjEwMSwiaXNfY29uc2VudF9wcm92aWRlZCI6dHJ1ZSwidXNlcm5hbWUiOiJkZW1vdXNlckBhdXRvcGlsb3QuY29tIiwidXNlcl9ndWlkIjoiN0UyOTExMDUtRDQyNy00QTRDLThGOEMtMUE5MUFCOUY3QTMzIiwiZmlyc3RfbmFtZSI6IkpvaG4iLCJsYXN0X25hbWUiOiJGYXJtcyIsInJldGFpbGVyIjp7ImlkIjo0OCwic2NvcGVzIjpbXX0sImV4cGlyZXNfaW4iOiIyMDIyLTAzLTA1IDE4OjQ3OjIzLjQyMjI2MCJ9.EhC9HR6vgi0dqmD24TpDpe4FEee1VT4p311zHACDk8k"
-# query =  f"exec ap_get_rule '{guid}',{UID}"
-
-# query = "exec ap_update_rule_departments"
-
-# query = "exec ap_update_rule_offer 0 "
-# # query = "exec ap_update_rule ''
-query = "exec ap_get_rule_top_n_shoppers 0"
-
-# print(type("'F36DF97E-F80C-44C1-A64F-6BE5D07FD298',1"))
-
-def Accessdbdata(conn,query):  
-
-	try:
-		filterdata = []
-		for x in query.split():
-			if x == 'exec':
-				pass
-			elif x != 'exec':
-				filterdata.append(x)
-		proc_name = filterdata[0]
-		# print(proc_name)
-		data = filterdata[1:]
-		# print(data)
-
-		name = ""
-		args_name = name.join(data)
-		# print(args_name)
-		body = {
-
-		"Instance":"veritra",
-
-		"DB":"RSA_CentMark",
-
-		"Proc": proc_name,
-
-		"Args": args_name
-	
-		}
-		response = requests.post(conn,json = body)
-		# print(proc_name)
-		# print(args_name)
-
-		rules = response.json()
-		return rules['Message']
-
-	except:
-		return False
-
-data = Accessdbdata(conn,query)
-print(data)
-
-
-
-
-
-		# "Instance":"veritra",
-
-		# "DB":"RSA_CentMark",
-
-		# "Proc":"ap_get_rule",
-
-		# "Args":"F36DF97E-F80C-44C1-A64F-6BE5D07FD298, eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySUQiOjEwMSwiaXNfY29uc2VudF9wcm92aWRlZCI6dHJ1ZSwidXNlcm5hbWUiOiJkZW1vdXNlckBhdXRvcGlsb3QuY29tIiwidXNlcl9ndWlkIjoiN0UyOTExMDUtRDQyNy00QTRDLThGOEMtMUE5MUFCOUY3QTMzIiwiZmlyc3RfbmFtZSI6IkpvaG4iLCJsYXN0X25hbWUiOiJGYXJtcyIsInJldGFpbGVyIjp7ImlkIjo0OCwic2NvcGVzIjpbXX0sImV4cGlyZXNfaW4iOiIyMDIyLTAzLTA1IDE4OjQ3OjIzLjQyMjI2MCJ9.EhC9HR6vgi0dqmD24TpDpe4FEee1VT4p311zHACDk8k".split(',')
-
-
-
-# response = requests.post(conn,json={
-
-#     "Instance":"veritra",
-
-#     "DB":"RSA_CentMark",
-
-#     "Proc":"ap_get_rule_top_n_shoppers",
-
-#     "Args":"0"
-
-# })
-
-
-
-# filterdata = ""
-
-# for x in query.split():
-# 	if x == 'exec':
-# 		pass
-# 	elif x != 'exec':
-# 		filterdata = filterdata +" "+ str(x)
-
-# data = filterdata.replace(' ',',')
-# data1 = data.strip(",")
-
-# print(data1)
-
-
-
-# filterdata = []
-# for x in query.split():
-# 	if x == 'exec':
-# 		pass
-# 	elif x != 'exec':
-# 		filterdata.append(x)
-# proc_name = filterdata[0]
-# data = filterdata[1:]
-# # print(data)
-
-# args_name = str(data).strip('[,]')
-
-query = f"exec ap_get_rule 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298',1"
-filterdata = []
-for x in query.split():
-	if x == 'exec':
-		pass
-	elif x != 'exec':
-		filterdata.append(x)
-proc_name = filterdata[0]
-# print(proc_name)
-data = filterdata[1:]
-# print(data)
-
-args_name = ""
-name = args_name.join(data)
-print(name)
+lambda_handler(event=url)

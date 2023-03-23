@@ -23,12 +23,6 @@ def get_data(url, body):
 
 
 data = get_data(url, body)
-# print(data)
-# data1 = json.dumps(data)
-# print(data1)
-# json_format = [{
-
-# }]
 data1 = []
 
 data1.append({
@@ -106,7 +100,7 @@ data1.append({
     }
 })
 count = len(data1)
-# print(count)
+
 
 data1.append({
     "Transaction Date": "2023-02-02",
