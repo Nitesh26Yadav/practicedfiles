@@ -65,7 +65,7 @@ def lambda_handler(event, context):
             "Field 4": i['price'],
             "Field 5": i['qty'],
             "Field 6": i['weight'],
-            "Field 7": "",
+            "Field 7": i['final_price']
         }
         for i in data['order_items']
     )
@@ -125,7 +125,7 @@ def lambda_handler(event, context):
         "Record Type": "FTR",
         "Field 1": int(count-1),
         "Field 2": "",
-        "Field 3": f"{data['subtotal_amount']}",
+        "Field 3": data['sub_total_without_discount_amount'],
         "Field 4": data["transaction_tax_amount"],
         "Field 5": data["transaction_total_amount"],
         "Field 6": "",

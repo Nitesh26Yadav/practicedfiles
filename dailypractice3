@@ -2,6 +2,7 @@ import boto3
 import requests
 import json
 import pandas as pd
+import os
 
 url = "https://okpricemart.grocerypundit.com/api/AogGetOrderDetailsToPOSFormat"
 
@@ -52,85 +53,94 @@ def lambda_handler(event):
             "Price": i['price'],
             "Quantity": i['qty'],
             "Weight": i['weight'],
-            "": ""
+            "Field 7": i['final_price']
         }
         )
     # print(data1)
 
+    order_update = data["order_placed_on"].split()
+    MFR = os.environ.get("MFRCouponDeptId")
+    Store = os.environ.get("StoreCouponDeptId")
     # Adding CPN data.
-    # for i in data['getCouponList']:
-    #     data1.append({
-    #         "Transaction Date": "2023-02-02",
-    #         "Transaction Time": "05:24:21",
-    #         "Transaction ID": data["order_id"],
-    #         "Record Type": "CPN",
-    #         "Coupon Type": "",
-    #         "Coupon code": "",
-    #         "Amount": "",
-    #         "Dept Code": "",
-    #         "": "",
-    #         "": "",
-    #         "": ""
-    #     }
-    #     )
-    # Adding TND data.
-    data1.append({
-        "Transaction Date": "2023-02-02",
-        "Transaction Time": "05:24:21",
-        "Transaction ID": data["order_id"],
-        "Record Type": "TND",
-        "Media Code": data["payment_method_name"],
-        "Account Number": "",
-        "Tendered Amount": data["transaction_tax_amount"],
-        "": "",
-        "": "",
-        "": "",
-        "": ""
-
-    })
-    # Adding TAX data.
-    data1.append({
-        "Transaction Date": "2023-02-02",
-        "Transaction Time": "05:24:21",
-        "Transaction ID": data["order_id"],
-        "Record Type": "TAX",
-        "Tax Code": "",
-        "Tax Collected": data["transaction_tax_amount"],
-
-    }
+    data1.extend(
+        {
+            "Transaction Date": order_update[0],
+            "Transaction Time": order_update[1],
+            "Transaction ID": data["order_id"],
+            "Record Type": "CPN",
+            "Field 1": "V" if i["CouponCategoryId"] == 4 else "S",
+            "Field 2": "",
+            "Field 3": f"{i['new_discount']}",
+            "Field 4": MFR if i["CouponCategoryId"] == 4 else Store,
+            "Field 5": "",
+            "Field 6": "",
+            "Field 7": "",
+        }
+        for i in data['getCouponList']
+    )
+    data1.extend(
+        (
+            {
+                "Transaction Date": order_update[0],
+                "Transaction Time": order_update[1],
+                "Transaction ID": data["order_id"],
+                "Record Type": "TND",
+                "Field 1": "",
+                "Field 2": "",
+                "Field 3": f"{data['transaction_total_amount']}",
+                "Field 4": "",
+                "Field 5": "",
+                "Field 6": "",
+                "Field 7": "",
+            },
+            {
+                "Transaction Date": order_update[0],
+                "Transaction Time": order_update[1],
+                "Transaction ID": data["order_id"],
+                "Record Type": "TAX",
+                "Field 1": "1",
+                "Field 2": "",
+                "Field 3": f"{data['subtotal_amount']}",
+                "Field 4": data["transaction_tax_amount"],
+                "Field 5": "",
+                "Field 6": "",
+                "Field 7": "",
+            },
+        )
     )
     count = len(data1)
     # Adding FTR data.
     data1.append({
-        "Transaction Date": "2023-02-02",
-        "Transaction Time": "05:24:21",
+        "Transaction Date": order_update[0],
+        "Transaction Time": order_update[1],
         "Transaction ID": data["order_id"],
         "Record Type": "FTR",
-        "Detail Count": count-1,
-        "Field3": "",
-        "Tax Total": data["transaction_tax_amount"],
-        "Transaction Total": data["transaction_total_amount"],
+        "Field 1": int(count-1),
+        "Field 2": "",
+        "Field 3": data['sub_total_without_discount_amount'],
+        "Field 4": data["transaction_tax_amount"],
+        "Field 5": data["transaction_total_amount"],
+        "Field 6": "",
+        "Field 7": ""
     }
     )
-    json_data = json.dumps(data1)
 
+    json_data = json.dumps(data1)
+    # print(json_data)
     df = pd.read_json(json_data)
     df.columns = df.columns.str.replace(',', '|')
 
     # Converting Float to int even with Nan values in column.
-    df['Product Code'] = df['Product Code'].astype("Int64")
-    df['Loyality'] = df["Loyality"].astype("Int64")
-    df['Detail Count'] = df['Detail Count'].astype("Int64")
 
     # converting dataframe to csv file.
-    df = df.to_csv(sep='|', index=False)
+    df = df.to_csv(sep='|', index=False, header=False)
     file_name = df.encode('utf-8')
 
     # Adding file into S3 Bucket
     response = s3.put_object(
         Body=file_name,
         Bucket="beginning.00",
-        Key="ftp_file.csv")
+        Key="ftp_filemap1.csv")
 
     if response:
         print("file uploaded")
