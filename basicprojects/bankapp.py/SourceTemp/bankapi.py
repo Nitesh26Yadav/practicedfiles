@@ -1,5 +1,5 @@
 import json
-from CommonApis import ValidateRequest, connectdb
+from CommonApis import ValidateRequest, connectdb, AccessDBData
 import logging
 import string
 import random
@@ -34,13 +34,13 @@ def Createuser(event):
     AccountNo = ''.join(random.choice(string.digits)
                         for _ in range(16))
     try:
-        Query = f"{AccountNo}, '{body['first_name']}', '{body['last_name']}', '{body['email']}', '{body['mobile_number']}', '{body['address']}', '{body['password']}'"
+        Query = f"exec {AccountNo}, '{body['first_name']}', '{body['last_name']}', '{body['email']}', '{body['mobile_number']}', '{body['address']}', '{body['password']}'"
     except KeyError as e:
         log.error(f" Missing parameter-{e}")
         return Response(400, f"Bad Request -{e}")
 
     conn = connectdb()
-    UserData = Accessdbdata(Query)
+    UserData = AccessDBData("exec update_register_data", Query)
     if not UserData:
         return Response(400, "Failed to Create User")
     else:

@@ -3,9 +3,23 @@ import pymssql
 import logging
 from jsonschema import validate, ValidationError
 import pymssql
-
+import json
 log = logging.getLogger()
 log.setLevel(logging.INFO)
+
+
+def Response(HttpCode, Msg):
+    log.info(f"-- Api Response --{Msg}")
+
+    return {
+        "StatusCode": HttpCode,
+        "headers": {
+            "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,X-Amz-Security-Token,Authorization,X-Api-Key,X-Requested-With,Accept,Access-Control-Allow-Methods,Access-Control-Allow-Origin,Access-Control-Allow-Headers",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
+        },
+        "body": json.dumps({Msg})
+    }
 
 
 def ValidateRequest(data, schema):
@@ -54,3 +68,26 @@ def connectdb():
         log.error(f"-DB Connection Error - {e}")
         print(f'DB Connection Error - {e}')
         return Response(500, "Something went wrong, Please try again")
+
+
+def AccessDBData(conn, query):
+    cursor = conn.cursor(as_dict=True)
+    log.info(f"-Running query - {query}")
+    try:
+        # cursor.execute("update brand set name = 'McD' OUTPUT inserted.id where company_id = 2;")
+        cursor.execute(f"{query};")
+        row = cursor.fetchall()
+        if cursor.rowcount > 0:
+            conn.commit()
+            log.info(f"-Query results - {row}")
+            # row is list of results(json)
+            return row
+        return []
+    except pymssql.OperationalError as e:
+        log.error(f"-DB insertion/update/delete Error - {e}")
+        return False
+    except pymssql.Error as e:
+        log.error(f"--DB insertion/update/delete Error - {e}")
+        cursor.execute("ROLLBACK;")
+        conn.rollback()
+        return False
