@@ -1,0 +1,244 @@
+# def AddMultipleCoupons(event):
+#     log.info("--------------- Method Start - Add Multiple Coupons----------------")
+#     body = json.loads(event["body"])
+
+#     coupons = body["Coupon"]
+#     MCoup = []
+#     for i in coupons:
+#         IsWholesaler = 'wholesaler:user' in event['AuthData']['scopes']
+#         CreatedByWholesaler = 1 if IsWholesaler else 0
+#         # if all('all' not in brands['scopes'] for brands in event['AuthData']['brands']):
+#         #     log.info("User not a RSA Admin")
+#         #     if all('coupon:write' not in brands['scopes'] and 'flexcoupon:write' not in brands['scopes'] for brands in event['AuthData']['brands'] if brands['guid'] == body['brand_guid']):
+#         #         log.info("User not authorized to write coupon")
+#         #         return returnValue(403, "Access Denied")
+#         if not i["wholesalers"]:
+#             return returnValue(400, "Wholesaler list with wholesaler_guid is required")
+#         if not i["upc"]:
+#             return returnValue(400, "UPC list with upc_guid is required")
+
+#         resp = ValidateRequest(i, "Coupon")
+#         WSList = []
+#         for r in i['wholesalers']:
+#             if not CompareDates(r['start_date'], r['end_date'], r['shutoff_date']):
+#                 return returnValue(400, "Bad request - Invalid wholesaler dates")
+#             respWS = ValidateRequest(r, "Wholesalers")
+#             if not respWS:
+#                 return returnValue(400, "Bad Request - check wholesalers")
+#             if r['redeem_limit'] > r['clip_limit']:
+#                 return returnValue(400, "Bad Request - check wholesalers - redeem Limit must be less than clip limit")
+#             WSList.append(respWS)
+#             if i['coupon_target_type_id'] == 2:
+#                 for rt in r['retailer']:
+#                     if not ValidateRequest(rt, "Retailers"):
+#                         return returnValue(400, "Bad Request - check retailer")
+#                     if rt['redeem_limit'] > rt['clip_limit']:
+#                         return returnValue(400, "Bad Request - check retailer - redeem Limit must be less than clip limit")
+
+#         respCC = ValidateRequest(i["coupon_condition"], "Coupon_Condition")
+#         if not resp or not respCC:
+#             return returnValue(400, "Bad Request - check body")
+#         body = resp
+#         body["coupon_condition"] = respCC
+#         body["wholesalers"] = WSList
+
+#         dates = CompareDates(body['start_date'],
+#                              body['end_date'], body['shutoff_date'])
+#         if not dates:
+#             return returnValue(400, "Bad request - Invalid coupon dates")
+
+#         # TODO remove this if statement once all clients mobile api is updated to handle multi limit coupon.
+#         if not IsWholesaler and int(body['coupon_condition']['per_transaction_limit']) > 1:
+#             return returnValue(400, "Multi use/limit coupon is not allowed.")
+
+#         UID = event['AuthData']['UserID']
+#         FirstName = event['AuthData']['first_name']
+#         Email = event['AuthData']['username']
+#         guids = uuid.uuid4()
+#         bucket = os.environ.get('BUCKET')
+#         try:
+#             BrandGuid = body['brand_guid']
+
+#             Brand = AccessDBData("exec bq_get_brand",
+#                                  f"'{BrandGuid}', 0, 0,{UID}")
+#             if not Brand:
+#                 return returnValue(400, "Bad Request - Brand not found")
+
+#             BrandID = Brand[0]['brand_id']
+#             BrandName = Brand[0]['brand_name']
+
+#             log.info(
+#                 f"BrandID = {BrandID} identified from brand_guid - {body['brand_guid']}")
+
+#             # for image in [body['image_1'], body['image_1_thumbnail']]:
+#             if 'https://s3.amazonaws.com/' not in body['image_1']:
+#                 for image in [body['image_1']]:
+#                     header = image.split(';base64,')[0]
+#                     frmt = header.split('/')[-1].lower()
+#                     frmt = 'jpg' if frmt == 'jpeg' else frmt
+
+#                 if not upload_Image(image, f'CouponLogo/Coupon-{guids}.{frmt}'):
+#                     return returnValue(400, "Failed to upload image")
+#                 log.info(
+#                     f"Successfully uploaded Image as Coupon-{guids}.{frmt}")
+#                 body['image_1'] = f'https://s3.amazonaws.com/{bucket}/CouponLogo/Coupon-{guids}.{frmt}'
+#             # body['is_flex'] = 1 if IsWholesaler else body['is_flex']
+#             Query = f"'', {body['coupon_category']}, {BrandID}, '{RemoveNonAscii(body['title'])}', '{RemoveNonAscii(body['description'])}', '{dates['Start']}', '{dates['End']}', '{dates['Shutoff']}', {body['clip_limit']}, {body['redeem_limit']}, {body['clip_limit_amount']}, {body['redeem_limit_amount']}, {body['coupon_type']}, {body['min_quantity']}, {body['reward_quantity']}, {body['min_purchase_amount']}, {body['reward_amount']}, {body['is_discount_percentage']}, {body['max_reward_limit']}, {body['limit_per_customer']}, '{RemoveNonAscii(body['addtional_details'])}', '{RemoveNonAscii(body['disclaimer'])}', '{RemoveNonAscii(body['offer_gs1'])}', '{body['image_1']}', '{body['image_1_thumbnail']}', '{RemoveNonAscii(body['media_url'])}', {body['manufactuer_id']}, {body['is_flex']},{CreatedByWholesaler}, {body['coupon_target_type_id']},'{RemoveNonAscii(body['coupon_code'] or '')}', 1, {UID}"
+
+#         except KeyError as e:
+#             log.error(f"Invalid or missing parameter - {e}")
+#             return returnValue(400, f"Invalid or missing parameter - {e}")
+#         else:
+
+#             InsertData = AccessDBData("bq_update_coupon", Query)
+#             if not InsertData:
+#                 return returnValue(400, "Bad Request - Failed to add Coupon")
+#             log.info(
+#                 f"Coupon Data Inserted Successfully with Guid: {InsertData[0]['coupon_guid']}")
+
+#             if not UploadJSON(body, f"CouponJson/Coupon_{InsertData[0]['coupon_guid']}_{UID}_{datetime.now(tz)}.json"):
+#                 log.error(
+#                     "Failed to upload coupon json to s3")
+
+#             InsertData = AccessDBData(
+#                 "exec bq_get_coupon", f"'{InsertData[0]['coupon_guid']}', 0, 0, {UID}")
+
+#             CouponID = InsertData[0]['coupon_id']
+#             del InsertData[0]['coupon_id']
+#             del InsertData[0]['coupon_category_id']
+#             del InsertData[0]['coupon_type_id']
+#             del InsertData[0]['brand_id']
+
+#             CouponWholesaler = CouponWholesalerLink(event, CouponID)
+#             if not CouponWholesaler:
+#                 AccessDBData("exec bq_delete_coupon",
+#                              f"'{InsertData[0]['coupon_guid']}',2,{UID}")
+#                 return returnValue(400, "Bad Request - Check Wholesaler")
+#             InsertData[0]['wholesalers'] = CouponWholesaler
+#             CouponUPC = CouponUPCLink(event, CouponID, BrandID)
+#             if not CouponUPC:
+#                 AccessDBData("exec bq_delete_coupon",
+#                              f"'{InsertData[0]['coupon_guid']}',2,{UID}")
+#                 return returnValue(400, "Bad Request - Check UPC")
+#             InsertData[0]['upc'] = CouponUPC
+#             CC = CouponCondition(event, CouponID)
+#             if not CC:
+#                 AccessDBData("exec bq_delete_coupon",
+#                              f"'{InsertData[0]['coupon_guid']}',2,{UID}")
+#                 return returnValue(400, "Bad Request - Check Coupon Condition")
+#             InsertData[0]['coupon_condition'] = CC
+
+#             try:
+#                 if InsertData[0]['coupon_target_type_id'] == 1:
+#                     TargetDetails = [{"target_name": i["wholesaler_name"], "start_date": i["start_date"], "end_date": i["end_date"],
+#                                       "shutoff_date": i["shutoff_date"], "clip_limit": i["clip_limit"]} for i in InsertData[0]['wholesalers']]
+#                 else:
+#                     TargetDetails = []
+#                     for ws in InsertData[0]['wholesalers']:
+#                         TargetDetails.extend([{"target_name": i["retailer_name"], "start_date": i["start_date"], "end_date": i["end_date"],
+#                                                "shutoff_date": i["shutoff_date"], "clip_limit": i["clip_limit"]} for i in ws['retailer']])
+#                 CouponModel = {
+#                     "name": FirstName,
+#                     "brand_name": BrandName,
+#                     "logo": InsertData[0]['image_1'],
+#                     "title": InsertData[0]['coupon_title'],
+#                     "description": InsertData[0]['coupon_description'],
+#                     "reward_amount": f"{InsertData[0]['reward_amount']}%" if InsertData[0]['is_discount_percentage'] else f"${InsertData[0]['reward_amount']}",
+#                     "is_flex": 'Yes' if InsertData[0]['is_flex'] else 'No',
+#                     "upcs": len(InsertData[0]['upc']),
+#                     "coupon_type_name": InsertData[0]['coupon_type_name'],
+#                     "target_details": TargetDetails,
+#                     "timestamp": f"{datetime.now(tz)} - UTC-0"
+#                 }
+#                 log.info(
+#                     f"Email Details to be Sent to {Email} - Model - {CouponModel}")
+#                 if not SendEmail("coupon-created", CouponModel, Email):
+#                     log.error(
+#                         "Failed to send coupon created email")
+#             except Exception:
+#                 log.error(
+#                     "Failed to send initial registration email")
+#             # Thread(target=SendEmail, args=("coupon-created", CouponModel, Email)).start()
+
+#             MCoup.append(InsertData[0])
+# return returnValue(200, MCoup)
+
+
+# Add this code once you pull git.
+# def AddMultipleCoupons(event):
+#     log.info("--------------- Method Start - Add Multiple Coupons----------------")
+#     body = json.loads(event["body"])
+
+#     coupons = body["Coupon"]
+#     MCoup = []
+#     for i in coupons:
+#         IsWholesaler = 'wholesaler:user' in event['AuthData']['scopes']
+#         CreatedByWholesaler = 1 if IsWholesaler else 0
+#         # if all('all' not in brands['scopes'] for brands in event['AuthData']['brands']):
+#         #     log.info("User not a RSA Admin")
+#         #     if all('coupon:write' not in brands['scopes'] and 'flexcoupon:write' not in brands['scopes'] for brands in event['AuthData']['brands'] if brands['guid'] == body['brand_guid']):
+#         #         log.info("User not authorized to write coupon")
+#         #         return returnValue(403, "Access Denied")
+#         if not i["wholesalers"]:
+#             return returnValue(400, "Wholesaler list with wholesaler_guid is required")
+#         if not i["upc"]:
+#             return returnValue(400, "UPC list with upc_guid is required")
+
+#         resp = ValidateRequest(i, "Coupon")
+#         WSList = []
+#         for r in i['wholesalers']:
+#             if not CompareDates(r['start_date'], r['end_date'], r['shutoff_date']):
+#                 return returnValue(400, "Bad request - Invalid wholesaler dates")
+#             respWS = ValidateRequest(r, "Wholesalers")
+#             if not respWS:
+#                 return returnValue(400, "Bad Request - check wholesalers")
+#             if r['redeem_limit'] > r['clip_limit']:
+#                 return returnValue(400, "Bad Request - check wholesalers - redeem Limit must be less than clip limit")
+#             WSList.append(respWS)
+#             if i['coupon_target_type_id'] == 2:
+#                 for rt in r['retailer']:
+#                     if not ValidateRequest(rt, "Retailers"):
+#                         return returnValue(400, "Bad Request - check retailer")
+#                     if rt['redeem_limit'] > rt['clip_limit']:
+#                         return returnValue(400, "Bad Request - check retailer - redeem Limit must be less than clip limit")
+
+#         respCC = ValidateRequest(i["coupon_condition"], "Coupon_Condition")
+#         if not resp or not respCC:
+#             return returnValue(400, "Bad Request - check body")
+#         body = resp
+#         body["coupon_condition"] = respCC
+#         body["wholesalers"] = WSList
+
+#         dates = CompareDates(body['start_date'],
+#                              body['end_date'], body['shutoff_date'])
+#         if not dates:
+#             return returnValue(400, "Bad request - Invalid coupon dates")
+
+#         # TODO remove this if statement once all clients mobile api is updated to handle multi limit coupon.
+#         if not IsWholesaler and int(body['coupon_condition']['per_transaction_limit']) > 1:
+#             return returnValue(400, "Multi use/limit coupon is not allowed.")
+
+#         MCoup.append(body)
+
+#     for Coup in MCoup:
+#         if isinstance(Coup, dict):
+#             Qdata = SendQMsg(Coup, '')
+
+#     return returnValue(200, Qdata)
+
+
+# in commonApi
+# def SendQMsg(Msg, QName):
+#     log.info(Msg)
+#     AccID = str(os.environ.get('AccID'))
+#     try:
+#         s3 = boto3.client('sqs')
+#         response = s3.send_message(
+#             QueueUrl=f"https://sqs.us-east-1.amazonaws.com/{AccID}/{QName}",
+#             MessageBody=json.dumps(Msg))
+#         log.info(response)
+
+#     except Exception as e:
+#         log.info(e)
+#         return [False, f"{e}"]
+#     return [True, response['MessageId']]

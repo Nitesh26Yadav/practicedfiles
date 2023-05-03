@@ -89,39 +89,60 @@ import json
 #         conn.rollback()
 #         return False
 
-import boto3
-import requests
+# import boto3
+# import requests
 
-msg = list(map(int, ("10", "20", "30", "40", "50")))
-# print(msg)
-
-
-response1 = requests.get(
-    " https://0jpo6xtx8k.execute-api.ap-south-1.amazonaws.com/data/employee_results")
-data = response1.text
+# msg = list(map(int, ("10", "20", "30", "40", "50")))
+# # print(msg)
 
 
-result = json.loads(data)
-body_data = result['body']['employeeids']
-# print(body_data)
-
-final_res = list(map(dict, body_data))
+# response1 = requests.get(
+#     " https://0jpo6xtx8k.execute-api.ap-south-1.amazonaws.com/data/employee_results")
+# data = response1.text
 
 
-def body(final_res):
+# result = json.loads(data)
+# body_data = result['body']['employeeids']
+# # print(body_data)
 
-    qname = 'first_queue'
-    store = boto3.client('sqs')
-    response = store.send_message(
-        QueueUrl=f'https://sqs.ap-south-1.amazonaws.com/206239526750/{qname}',
-        MessageBody=json.dumps(final_res),
-    )
-
-    return (response)
+# final_res = list(map(dict, body_data))
 
 
-print(body(final_res))
+# def body(final_res):
 
-for res in final_res:
-    if isinstance(res, dict):
-        result = body(res)
+#     qname = 'first_queue'
+#     store = boto3.client('sqs')
+#     response = store.send_message(
+#         QueueUrl=f'https://sqs.ap-south-1.amazonaws.com/206239526750/{qname}',
+#         MessageBody=json.dumps(final_res),
+#     )
+
+#     return (response)
+
+
+# # print(body(final_res))
+
+# for res in final_res:
+#     if isinstance(res, dict):
+#         result = body(res)
+
+# data = (200, 150)
+# data1 = []
+# if data[0] == 200:
+#     data1.append(data[1])
+# print(data1)
+
+
+# def AddmultipleCoupons(event):
+#     log.info("--------------- Method Start - Add Multiple Coupons----------------")
+#     body = json.loads(event["body"])
+
+#     coupons = body["Coupon"]
+#     MCoup = []
+#     for i in coupons:
+#         data = AddCoupon(i)
+#         if data[0] == 200:
+#             MCoup.append(data[1])
+#         else:
+#             return returnValue(400, "something went wrong.")
+#     return returnValue(200, data)
