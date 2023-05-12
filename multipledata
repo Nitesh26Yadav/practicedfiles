@@ -1,244 +1,379 @@
-# def AddMultipleCoupons(event):
-#     log.info("--------------- Method Start - Add Multiple Coupons----------------")
-#     body = json.loads(event["body"])
-
-#     coupons = body["Coupon"]
-#     MCoup = []
-#     for i in coupons:
-#         IsWholesaler = 'wholesaler:user' in event['AuthData']['scopes']
-#         CreatedByWholesaler = 1 if IsWholesaler else 0
-#         # if all('all' not in brands['scopes'] for brands in event['AuthData']['brands']):
-#         #     log.info("User not a RSA Admin")
-#         #     if all('coupon:write' not in brands['scopes'] and 'flexcoupon:write' not in brands['scopes'] for brands in event['AuthData']['brands'] if brands['guid'] == body['brand_guid']):
-#         #         log.info("User not authorized to write coupon")
-#         #         return returnValue(403, "Access Denied")
-#         if not i["wholesalers"]:
-#             return returnValue(400, "Wholesaler list with wholesaler_guid is required")
-#         if not i["upc"]:
-#             return returnValue(400, "UPC list with upc_guid is required")
-
-#         resp = ValidateRequest(i, "Coupon")
-#         WSList = []
-#         for r in i['wholesalers']:
-#             if not CompareDates(r['start_date'], r['end_date'], r['shutoff_date']):
-#                 return returnValue(400, "Bad request - Invalid wholesaler dates")
-#             respWS = ValidateRequest(r, "Wholesalers")
-#             if not respWS:
-#                 return returnValue(400, "Bad Request - check wholesalers")
-#             if r['redeem_limit'] > r['clip_limit']:
-#                 return returnValue(400, "Bad Request - check wholesalers - redeem Limit must be less than clip limit")
-#             WSList.append(respWS)
-#             if i['coupon_target_type_id'] == 2:
-#                 for rt in r['retailer']:
-#                     if not ValidateRequest(rt, "Retailers"):
-#                         return returnValue(400, "Bad Request - check retailer")
-#                     if rt['redeem_limit'] > rt['clip_limit']:
-#                         return returnValue(400, "Bad Request - check retailer - redeem Limit must be less than clip limit")
-
-#         respCC = ValidateRequest(i["coupon_condition"], "Coupon_Condition")
-#         if not resp or not respCC:
-#             return returnValue(400, "Bad Request - check body")
-#         body = resp
-#         body["coupon_condition"] = respCC
-#         body["wholesalers"] = WSList
-
-#         dates = CompareDates(body['start_date'],
-#                              body['end_date'], body['shutoff_date'])
-#         if not dates:
-#             return returnValue(400, "Bad request - Invalid coupon dates")
-
-#         # TODO remove this if statement once all clients mobile api is updated to handle multi limit coupon.
-#         if not IsWholesaler and int(body['coupon_condition']['per_transaction_limit']) > 1:
-#             return returnValue(400, "Multi use/limit coupon is not allowed.")
-
-#         UID = event['AuthData']['UserID']
-#         FirstName = event['AuthData']['first_name']
-#         Email = event['AuthData']['username']
-#         guids = uuid.uuid4()
-#         bucket = os.environ.get('BUCKET')
-#         try:
-#             BrandGuid = body['brand_guid']
-
-#             Brand = AccessDBData("exec bq_get_brand",
-#                                  f"'{BrandGuid}', 0, 0,{UID}")
-#             if not Brand:
-#                 return returnValue(400, "Bad Request - Brand not found")
-
-#             BrandID = Brand[0]['brand_id']
-#             BrandName = Brand[0]['brand_name']
-
-#             log.info(
-#                 f"BrandID = {BrandID} identified from brand_guid - {body['brand_guid']}")
-
-#             # for image in [body['image_1'], body['image_1_thumbnail']]:
-#             if 'https://s3.amazonaws.com/' not in body['image_1']:
-#                 for image in [body['image_1']]:
-#                     header = image.split(';base64,')[0]
-#                     frmt = header.split('/')[-1].lower()
-#                     frmt = 'jpg' if frmt == 'jpeg' else frmt
-
-#                 if not upload_Image(image, f'CouponLogo/Coupon-{guids}.{frmt}'):
-#                     return returnValue(400, "Failed to upload image")
-#                 log.info(
-#                     f"Successfully uploaded Image as Coupon-{guids}.{frmt}")
-#                 body['image_1'] = f'https://s3.amazonaws.com/{bucket}/CouponLogo/Coupon-{guids}.{frmt}'
-#             # body['is_flex'] = 1 if IsWholesaler else body['is_flex']
-#             Query = f"'', {body['coupon_category']}, {BrandID}, '{RemoveNonAscii(body['title'])}', '{RemoveNonAscii(body['description'])}', '{dates['Start']}', '{dates['End']}', '{dates['Shutoff']}', {body['clip_limit']}, {body['redeem_limit']}, {body['clip_limit_amount']}, {body['redeem_limit_amount']}, {body['coupon_type']}, {body['min_quantity']}, {body['reward_quantity']}, {body['min_purchase_amount']}, {body['reward_amount']}, {body['is_discount_percentage']}, {body['max_reward_limit']}, {body['limit_per_customer']}, '{RemoveNonAscii(body['addtional_details'])}', '{RemoveNonAscii(body['disclaimer'])}', '{RemoveNonAscii(body['offer_gs1'])}', '{body['image_1']}', '{body['image_1_thumbnail']}', '{RemoveNonAscii(body['media_url'])}', {body['manufactuer_id']}, {body['is_flex']},{CreatedByWholesaler}, {body['coupon_target_type_id']},'{RemoveNonAscii(body['coupon_code'] or '')}', 1, {UID}"
-
-#         except KeyError as e:
-#             log.error(f"Invalid or missing parameter - {e}")
-#             return returnValue(400, f"Invalid or missing parameter - {e}")
-#         else:
-
-#             InsertData = AccessDBData("bq_update_coupon", Query)
-#             if not InsertData:
-#                 return returnValue(400, "Bad Request - Failed to add Coupon")
-#             log.info(
-#                 f"Coupon Data Inserted Successfully with Guid: {InsertData[0]['coupon_guid']}")
-
-#             if not UploadJSON(body, f"CouponJson/Coupon_{InsertData[0]['coupon_guid']}_{UID}_{datetime.now(tz)}.json"):
-#                 log.error(
-#                     "Failed to upload coupon json to s3")
-
-#             InsertData = AccessDBData(
-#                 "exec bq_get_coupon", f"'{InsertData[0]['coupon_guid']}', 0, 0, {UID}")
-
-#             CouponID = InsertData[0]['coupon_id']
-#             del InsertData[0]['coupon_id']
-#             del InsertData[0]['coupon_category_id']
-#             del InsertData[0]['coupon_type_id']
-#             del InsertData[0]['brand_id']
-
-#             CouponWholesaler = CouponWholesalerLink(event, CouponID)
-#             if not CouponWholesaler:
-#                 AccessDBData("exec bq_delete_coupon",
-#                              f"'{InsertData[0]['coupon_guid']}',2,{UID}")
-#                 return returnValue(400, "Bad Request - Check Wholesaler")
-#             InsertData[0]['wholesalers'] = CouponWholesaler
-#             CouponUPC = CouponUPCLink(event, CouponID, BrandID)
-#             if not CouponUPC:
-#                 AccessDBData("exec bq_delete_coupon",
-#                              f"'{InsertData[0]['coupon_guid']}',2,{UID}")
-#                 return returnValue(400, "Bad Request - Check UPC")
-#             InsertData[0]['upc'] = CouponUPC
-#             CC = CouponCondition(event, CouponID)
-#             if not CC:
-#                 AccessDBData("exec bq_delete_coupon",
-#                              f"'{InsertData[0]['coupon_guid']}',2,{UID}")
-#                 return returnValue(400, "Bad Request - Check Coupon Condition")
-#             InsertData[0]['coupon_condition'] = CC
-
-#             try:
-#                 if InsertData[0]['coupon_target_type_id'] == 1:
-#                     TargetDetails = [{"target_name": i["wholesaler_name"], "start_date": i["start_date"], "end_date": i["end_date"],
-#                                       "shutoff_date": i["shutoff_date"], "clip_limit": i["clip_limit"]} for i in InsertData[0]['wholesalers']]
-#                 else:
-#                     TargetDetails = []
-#                     for ws in InsertData[0]['wholesalers']:
-#                         TargetDetails.extend([{"target_name": i["retailer_name"], "start_date": i["start_date"], "end_date": i["end_date"],
-#                                                "shutoff_date": i["shutoff_date"], "clip_limit": i["clip_limit"]} for i in ws['retailer']])
-#                 CouponModel = {
-#                     "name": FirstName,
-#                     "brand_name": BrandName,
-#                     "logo": InsertData[0]['image_1'],
-#                     "title": InsertData[0]['coupon_title'],
-#                     "description": InsertData[0]['coupon_description'],
-#                     "reward_amount": f"{InsertData[0]['reward_amount']}%" if InsertData[0]['is_discount_percentage'] else f"${InsertData[0]['reward_amount']}",
-#                     "is_flex": 'Yes' if InsertData[0]['is_flex'] else 'No',
-#                     "upcs": len(InsertData[0]['upc']),
-#                     "coupon_type_name": InsertData[0]['coupon_type_name'],
-#                     "target_details": TargetDetails,
-#                     "timestamp": f"{datetime.now(tz)} - UTC-0"
+# import json
+# response = {
+#     'Messages': [
+#         {
+#             'MessageId': 'string',
+#             'ReceiptHandle': 'string',
+#             'MD5OfBody': 'string',
+#             'Body': 'string',
+#             'Attributes': {
+#                 'string': 'string'
+#             },
+#             'MD5OfMessageAttributes': 'string',
+#             'MessageAttributes': {
+#                 'string': {
+#                     'StringValue': 'string',
+#                     'BinaryValue': b'bytes',
+#                     'StringListValues': [
+#                         'string',
+#                     ],
+#                     'BinaryListValues': [
+#                         b'bytes',
+#                     ],
+#                     'DataType': 'string'
 #                 }
-#                 log.info(
-#                     f"Email Details to be Sent to {Email} - Model - {CouponModel}")
-#                 if not SendEmail("coupon-created", CouponModel, Email):
-#                     log.error(
-#                         "Failed to send coupon created email")
-#             except Exception:
-#                 log.error(
-#                     "Failed to send initial registration email")
-#             # Thread(target=SendEmail, args=("coupon-created", CouponModel, Email)).start()
+#             }
+#         },
+#         {
+#             'MessageId': 'abfjbf',
+#             'ReceiptHandle': 'string',
+#             'MD5OfBody': 'string',
+#             'Body': 'string',
+#             'Attributes': {
+#                 'string': 'string'
+#             },
+#             'MD5OfMessageAttributes': 'string',
+#             'MessageAttributes': {
+#                 'string': {
+#                     'StringValue': 'string',
+#                     'BinaryValue': b'bytes',
+#                     'StringListValues': [
+#                         'string',
+#                     ],
+#                     'BinaryListValues': [
+#                         b'bytes',
+#                     ],
+#                     'DataType': 'string'
+#                 }
+#             }
+#         },
+#     ]
+# }
 
-#             MCoup.append(InsertData[0])
-# return returnValue(200, MCoup)
+# response = {
+#     "Records": [
+#         {
+#             "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
+#             "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+#             "body": "Test message.",
+#             "attributes": {
+#                 "ApproximateReceiveCount": "1",
+#                 "SentTimestamp": "1545082649183",
+#                 "SenderId": "AIDAIENQZJOLO23YVJ4VO",
+#                 "ApproximateFirstReceiveTimestamp": "1545082649185"
+#             },
+#             "messageAttributes": {},
+#             "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b3",
+#             "eventSource": "aws:sqs",
+#             "eventSourceARN": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+#             "awsRegion": "us-east-2"
+#         },
+#         {
+#             "messageId": "2e1424d4-f796-459a-8184-9c92662be6da",
+#             "receiptHandle": "AQEBzWwaftRI0KuVm4tP+/7q1rGgNqicHq...",
+#             "body": "Test message.",
+#             "attributes": {
+#                 "ApproximateReceiveCount": "1",
+#                 "SentTimestamp": "1545082650636",
+#                 "SenderId": "AIDAIENQZJOLO23YVJ4VO",
+#                 "ApproximateFirstReceiveTimestamp": "1545082650649"
+#             },
+#             "messageAttributes": {},
+#             "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b3",
+#             "eventSource": "aws:sqs",
+#             "eventSourceARN": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+#             "awsRegion": "us-east-2"
+#         }
+#     ]
+# }
+# # if 'Messages' in response:
+# #     print(response['Messages'][1])
+# # else:
+# #     print(False)
 
-
-# Add this code once you pull git.
-# def AddMultipleCoupons(event):
-#     log.info("--------------- Method Start - Add Multiple Coupons----------------")
-#     body = json.loads(event["body"])
-
-#     coupons = body["Coupon"]
-#     MCoup = []
-#     for i in coupons:
-#         IsWholesaler = 'wholesaler:user' in event['AuthData']['scopes']
-#         CreatedByWholesaler = 1 if IsWholesaler else 0
-#         # if all('all' not in brands['scopes'] for brands in event['AuthData']['brands']):
-#         #     log.info("User not a RSA Admin")
-#         #     if all('coupon:write' not in brands['scopes'] and 'flexcoupon:write' not in brands['scopes'] for brands in event['AuthData']['brands'] if brands['guid'] == body['brand_guid']):
-#         #         log.info("User not authorized to write coupon")
-#         #         return returnValue(403, "Access Denied")
-#         if not i["wholesalers"]:
-#             return returnValue(400, "Wholesaler list with wholesaler_guid is required")
-#         if not i["upc"]:
-#             return returnValue(400, "UPC list with upc_guid is required")
-
-#         resp = ValidateRequest(i, "Coupon")
-#         WSList = []
-#         for r in i['wholesalers']:
-#             if not CompareDates(r['start_date'], r['end_date'], r['shutoff_date']):
-#                 return returnValue(400, "Bad request - Invalid wholesaler dates")
-#             respWS = ValidateRequest(r, "Wholesalers")
-#             if not respWS:
-#                 return returnValue(400, "Bad Request - check wholesalers")
-#             if r['redeem_limit'] > r['clip_limit']:
-#                 return returnValue(400, "Bad Request - check wholesalers - redeem Limit must be less than clip limit")
-#             WSList.append(respWS)
-#             if i['coupon_target_type_id'] == 2:
-#                 for rt in r['retailer']:
-#                     if not ValidateRequest(rt, "Retailers"):
-#                         return returnValue(400, "Bad Request - check retailer")
-#                     if rt['redeem_limit'] > rt['clip_limit']:
-#                         return returnValue(400, "Bad Request - check retailer - redeem Limit must be less than clip limit")
-
-#         respCC = ValidateRequest(i["coupon_condition"], "Coupon_Condition")
-#         if not resp or not respCC:
-#             return returnValue(400, "Bad Request - check body")
-#         body = resp
-#         body["coupon_condition"] = respCC
-#         body["wholesalers"] = WSList
-
-#         dates = CompareDates(body['start_date'],
-#                              body['end_date'], body['shutoff_date'])
-#         if not dates:
-#             return returnValue(400, "Bad request - Invalid coupon dates")
-
-#         # TODO remove this if statement once all clients mobile api is updated to handle multi limit coupon.
-#         if not IsWholesaler and int(body['coupon_condition']['per_transaction_limit']) > 1:
-#             return returnValue(400, "Multi use/limit coupon is not allowed.")
-
-#         MCoup.append(body)
-
-#     for Coup in MCoup:
-#         if isinstance(Coup, dict):
-#             Qdata = SendQMsg(Coup, '')
-
-#     return returnValue(200, Qdata)
+# # data = [True, response['messageId']]
+# # for messages in data[1]:
+# #     print(messages)
 
 
-# in commonApi
-# def SendQMsg(Msg, QName):
-#     log.info(Msg)
-#     AccID = str(os.environ.get('AccID'))
+# # if not Qdata[0]:
+# #     return (f"failed to Send Queue Message - {Qdata[1]}")
+# # else:
+# #     QRdata = RecieveQMsg(MCoup, 'bq-create-coupon')
+
+# #     if not QRdata[0]:
+# #         return ("failed to recieve Message body")
+# # for messages in QRdata[1]['Messages']:
+# #     addCoup = AddCoupon(messages['Body'])
+
+# # if not addCoup:
+# #     return ("bad Request - Check data")
+# event = {"body":
+#          [{
+#              "title": "MARS",
+#              "description": "$0.50 OFF ON NEXT VISIT",
+#              "offer_gs1": "",
+#              "reward_amount": 0.5,
+#              "min_purchase_amount": 5,
+#              "manufactuer_id": 0,
+#              "coupon_category": 2,
+#              "start_date": "2022-07-20T00:00:00.000Z",
+#              "end_date": "2022-07-22T00:00:00.000Z",
+#              "shutoff_date": "2022-07-22T00:00:00.000Z",
+#              "clip_limit": 0,
+#              "redeem_limit": 0,
+#              "clip_limit_amount": 0,
+#              "redeem_limit_amount": 0,
+#              "coupon_type": 1,
+#              "reward_quantity": 0,
+#              "min_quantity": 1,
+#              "coupon_code": "",
+#              "is_flex": 0,
+#              "coupon_target_type_id": 1,
+#              "is_discount_percentage": 0,
+#              "max_reward_limit": 0,
+#              "limit_per_customer": 0,
+#              "addtional_details": "",
+#              "disclaimer": "",
+#              "image_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAACwElEQVRYhcWXTUgUYRyHn/87riJq34iFHfqWIgjNDzAN1ywSOgaBJw8lYSkdgo57t0MZSnXpFEJIUEF4cA9JRJaGUKLhVhJZkkSpq6Xuzr+DH5mt7uw41e+0O+/wPs/O/HbmfeE/R377FlBTmBXKsdEcW8RyMoFG9NWL2t19bgWS5j/kN4W2qhVqiUIxCKLOJhBLvgCbYo1daBvdYPtMuUIWaHdj+ZonsQUCatQKtQDFCkOCdAoadSKgwh+TApwLjvujSCuwfk6VumD4wY/JtFM3T8jkwg8AKLw+sDcKvQpDiNnXXbNj1Al8udQHx0sVeQikxRjuSI6kVV4+JhMABsBGc2ZtpHO18PPt4SOKtC0DByidTpq4e6ZLfb8E5grn9LKvBBfhPpAa59SjKWPhswsCXqS+PVzhEA6AqFR4JlDfHq5Q4Z5T+FxSPBFwCUchCIueA/8SjtLDdNqVVQm4hkN/xOJ4c6VMgctbsCq4oay5LH14/kDCAl7CExbwGp6QwN+AOxaoC45Vu4ELvFSfli4HdywActUN3PZp+bXSjJGVzosrcPKOWkBGInCgb8ZwNB7ckUD2xu95SxdO8eARg3+ly744cR9EttjFOFwdOYHnNr8uMZZVFUm2LvVUb/sWvwNqcr2CAxhjalGt8U3N+MFJCdXe4xUcQJasQeLeAkWzV+yA8kmT9XCzg8LFSvyXkfAV2IyKrWJPCuazooOC9CLyuNGf2oqI7QbuSKDRn77/4vORzIaCTEetdiVgVKOKoMTYjIjYDeAZfJahiK02zBXCIP2zg1qYd+PNWq9gS3Pg1rt1qBYBiGW9h/l2BdQczBp4BHII5SMiT1e7Ql4aRSxUixC2AB1dwzvLCIi9UO/8ptBWLG4rWuIlOEY6LIuqztO7PkCMzWlB1tvcqNjbvKaKogYz+Gx4+wsC7v81nucnDeIkBb3IGFkAAAAASUVORK5CYII=",
+#              "image_1_thumbnail": "string",
+#              "media_url": "string",
+#              "brand_guid": "B2A81B2E-2DB2-4A0C-8F61-20BA11D04D6F",
+#              "coupon_condition": {
+#                  "per_customer_limit": 1,
+#                  "per_transaction_limit": 1
+#              },
+#              "wholesalers": [
+#                  {
+#                      "wholesaler_id": 5,
+#                      "start_date": "2022-07-20T00:00:00.000Z",
+#                      "end_date": "2022-07-22T00:00:00.000Z",
+#                      "shutoff_date": "2022-07-22T00:00:00.000Z",
+#                      "clip_limit": 0,
+#                      "redeem_limit": 0,
+#                      "retailer": []
+#                  }
+#              ],
+#              "upc": [
+#                  "4011", "4046"
+#              ]
+#          },
+#              {
+#              "title": "MARS",
+#              "description": "$0.50 OFF ON NEXT VISIT",
+#              "offer_gs1": "",
+#              "reward_amount": 0.5,
+#              "min_purchase_amount": 5,
+#              "manufactuer_id": 0,
+#              "coupon_category": 2,
+#              "start_date": "2022-07-20T00:00:00.000Z",
+#              "end_date": "2022-07-22T00:00:00.000Z",
+#              "shutoff_date": "2022-07-22T00:00:00.000Z",
+#              "clip_limit": 0,
+#              "redeem_limit": 0,
+#              "clip_limit_amount": 0,
+#              "redeem_limit_amount": 0,
+#              "coupon_type": 1,
+#              "reward_quantity": 0,
+#              "min_quantity": 1,
+#              "coupon_code": "",
+#              "is_flex": 0,
+#              "coupon_target_type_id": 1,
+#              "is_discount_percentage": 0,
+#              "max_reward_limit": 0,
+#              "limit_per_customer": 0,
+#              "addtional_details": "",
+#              "disclaimer": "",
+#              "image_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAACwElEQVRYhcWXTUgUYRyHn/87riJq34iFHfqWIgjNDzAN1ywSOgaBJw8lYSkdgo57t0MZSnXpFEJIUEF4cA9JRJaGUKLhVhJZkkSpq6Xuzr+DH5mt7uw41e+0O+/wPs/O/HbmfeE/R377FlBTmBXKsdEcW8RyMoFG9NWL2t19bgWS5j/kN4W2qhVqiUIxCKLOJhBLvgCbYo1daBvdYPtMuUIWaHdj+ZonsQUCatQKtQDFCkOCdAoadSKgwh+TApwLjvujSCuwfk6VumD4wY/JtFM3T8jkwg8AKLw+sDcKvQpDiNnXXbNj1Al8udQHx0sVeQikxRjuSI6kVV4+JhMABsBGc2ZtpHO18PPt4SOKtC0DByidTpq4e6ZLfb8E5grn9LKvBBfhPpAa59SjKWPhswsCXqS+PVzhEA6AqFR4JlDfHq5Q4Z5T+FxSPBFwCUchCIueA/8SjtLDdNqVVQm4hkN/xOJ4c6VMgctbsCq4oay5LH14/kDCAl7CExbwGp6QwN+AOxaoC45Vu4ELvFSfli4HdywActUN3PZp+bXSjJGVzosrcPKOWkBGInCgb8ZwNB7ckUD2xu95SxdO8eARg3+ly744cR9EttjFOFwdOYHnNr8uMZZVFUm2LvVUb/sWvwNqcr2CAxhjalGt8U3N+MFJCdXe4xUcQJasQeLeAkWzV+yA8kmT9XCzg8LFSvyXkfAV2IyKrWJPCuazooOC9CLyuNGf2oqI7QbuSKDRn77/4vORzIaCTEetdiVgVKOKoMTYjIjYDeAZfJahiK02zBXCIP2zg1qYd+PNWq9gS3Pg1rt1qBYBiGW9h/l2BdQczBp4BHII5SMiT1e7Ql4aRSxUixC2AB1dwzvLCIi9UO/8ptBWLG4rWuIlOEY6LIuqztO7PkCMzWlB1tvcqNjbvKaKogYz+Gx4+wsC7v81nucnDeIkBb3IGFkAAAAASUVORK5CYII=",
+#              "image_1_thumbnail": "string",
+#              "media_url": "string",
+#              "brand_guid": "B2A81B2E-2DB2-4A0C-8F61-20BA11D04D6F",
+#              "coupon_condition": {
+#                       "per_customer_limit": 1,
+#                       "per_transaction_limit": 1
+#              },
+#              "wholesalers": [
+#                  {
+#                      "wholesaler_id": 5,
+#                      "start_date": "2022-07-20T00:00:00.000Z",
+#                      "end_date": "2022-07-22T00:00:00.000Z",
+#                      "shutoff_date": "2022-07-22T00:00:00.000Z",
+#                      "clip_limit": 0,
+#                      "redeem_limit": 0,
+#                      "retailer": []
+#                  }
+#              ],
+#              "upc": [
+#                  "4011", "4046"
+#              ]
+#          }]}
+# Authdata = {"UserID": 1,
+#             "first_name": 'Nitesh',
+#             'username': 'Nitesh@gmail.com',
+#             'IsWholesaler': '1'}
+
+# dataAuth = {}
+# Coup_dataAuth = []
+# for Coup in event['body']:
+#     if isinstance(Coup, dict):
+#         Coup_dataAuth.append(Coup)
+#         dataAuth['AuthData'] = Authdata
+#         Coup_dataAuth.append(dataAuth)
+#         # print(Coup_dataAuth)
+
+# data = json.dumps(Coup_dataAuth)
+# # print(data)
+# data1 = json.loads(data)
+
+# print(data1)
+
+# # event_body = {}
+# # event_body['event'] = body_data
+# # print(event_body['event'])
+
+# import logging
+
+# log = logging.getLogger()
+# log.setLevel(logging.INFO)
+# # event = {"body": {
+# #     "title": "MARS",
+# #     "description": "$0.50 OFF ON NEXT VISIT",
+# #     "offer_gs1": "",
+# #     "reward_amount": 0.5,
+# #     "min_purchase_amount": 5,
+# #     "manufactuer_id": 0,
+# #     "coupon_category": 2,
+# #     "start_date": "2022-07-20T00:00:00.000Z",
+# #     "end_date": "2022-07-22T00:00:00.000Z",
+# #     "shutoff_date": "2022-07-22T00:00:00.000Z",
+# #     "clip_limit": 0,
+# #     "redeem_limit": 0,
+# #     "clip_limit_amount": 0,
+# #     "redeem_limit_amount": 0,
+# #     "coupon_type": 1,
+# #     "reward_quantity": 0,
+# #     "min_quantity": 1,
+# #     "coupon_code": "",
+# #     "is_flex": 0,
+# #     "coupon_target_type_id": 1,
+# #     "is_discount_percentage": 0,
+# #     "max_reward_limit": 0,
+# #     "limit_per_customer": 0,
+# #     "addtional_details": "",
+# #     "disclaimer": "",
+# #     "image_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAACwElEQVRYhcWXTUgUYRyHn/87riJq34iFHfqWIgjNDzAN1ywSOgaBJw8lYSkdgo57t0MZSnXpFEJIUEF4cA9JRJaGUKLhVhJZkkSpq6Xuzr+DH5mt7uw41e+0O+/wPs/O/HbmfeE/R377FlBTmBXKsdEcW8RyMoFG9NWL2t19bgWS5j/kN4W2qhVqiUIxCKLOJhBLvgCbYo1daBvdYPtMuUIWaHdj+ZonsQUCatQKtQDFCkOCdAoadSKgwh+TApwLjvujSCuwfk6VumD4wY/JtFM3T8jkwg8AKLw+sDcKvQpDiNnXXbNj1Al8udQHx0sVeQikxRjuSI6kVV4+JhMABsBGc2ZtpHO18PPt4SOKtC0DByidTpq4e6ZLfb8E5grn9LKvBBfhPpAa59SjKWPhswsCXqS+PVzhEA6AqFR4JlDfHq5Q4Z5T+FxSPBFwCUchCIueA/8SjtLDdNqVVQm4hkN/xOJ4c6VMgctbsCq4oay5LH14/kDCAl7CExbwGp6QwN+AOxaoC45Vu4ELvFSfli4HdywActUN3PZp+bXSjJGVzosrcPKOWkBGInCgb8ZwNB7ckUD2xu95SxdO8eARg3+ly744cR9EttjFOFwdOYHnNr8uMZZVFUm2LvVUb/sWvwNqcr2CAxhjalGt8U3N+MFJCdXe4xUcQJasQeLeAkWzV+yA8kmT9XCzg8LFSvyXkfAV2IyKrWJPCuazooOC9CLyuNGf2oqI7QbuSKDRn77/4vORzIaCTEetdiVgVKOKoMTYjIjYDeAZfJahiK02zBXCIP2zg1qYd+PNWq9gS3Pg1rt1qBYBiGW9h/l2BdQczBp4BHII5SMiT1e7Ql4aRSxUixC2AB1dwzvLCIi9UO/8ptBWLG4rWuIlOEY6LIuqztO7PkCMzWlB1tvcqNjbvKaKogYz+Gx4+wsC7v81nucnDeIkBb3IGFkAAAAASUVORK5CYII=",
+# #     "image_1_thumbnail": "string",
+# #     "media_url": "string",
+# #     "brand_guid": "B2A81B2E-2DB2-4A0C-8F61-20BA11D04D6F",
+# #     "coupon_condition": {
+# #         "per_customer_limit": 1,
+# #         "per_transaction_limit": 1
+# #     },
+# #     "wholesalers": [
+# #         {
+# #             "wholesaler_id": 5,
+# #             "start_date": "2022-07-20T00:00:00.000Z",
+# #             "end_date": "2022-07-22T00:00:00.000Z",
+# #             "shutoff_date": "2022-07-22T00:00:00.000Z",
+# #             "clip_limit": 0,
+# #             "redeem_limit": 0,
+# #             "retailer": [
+
+# #             ]
+# #         }
+# #     ],
+# #     "upc": [
+# #         "4011",
+# #         "4046"
+# #     ],
+# #     "AuthData": {
+# #         "UserID": 1,
+# #         "first_name": "Nitesh",
+# #         "username": "Nitesh@gmail.com",
+# #         "IsWholesaler": "1"
+# #     }}
+# # }
+
+# # for i in event['Authdata']:
+# #     print(i)
+
+
+# def returnValue(HttpCode, Msg):
+#     log.info(f"-- API Response - {Msg}")
+#     log.info(
+#         "------------------------END OF CODE--------------------------")
+#     return {
+#         "statusCode": HttpCode,
+#         'headers': {
+#             "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,X-Amz-Security-Token,Authorization,X-Api-Key,X-Requested-With,Accept,Access-Control-Allow-Methods,Access-Control-Allow-Origin,Access-Control-Allow-Headers",
+#             "Access-Control-Allow-Origin": "*",
+#             "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
+#             "X-Requested-With": "*"
+#         },
+#         "body": json.dumps({
+#             "Message": Msg
+#         })}
+
+
+# event = {'Records': [{'messageId': 'c1fa5014-be65-4781-9fbe-b71c25e9a2a3', 'receiptHandle': 'AQEB1me5YbO/P1nmDpcAFbgDxGTShXnWunhoxRFDoigiIhWQ6LCZuT04DAzZyQI2jizN/od38v40Sp7AAG1sa7tznkkDhtGHWEPZOEVUinfJ9a6WeEXVam5LRlCKMPRETimNeV+IYf7aB/OtMFCfRRcnPU7V4f9q5aHHGdDABOo8z6M5HnrXo7D5CW7NSR2Fw8eTo0Eo6/XVvUaov+xkftxyLVmYfBHTq2YKkX5eDmLSMovlH98TK1cK6z4FGqBBbhxmXQ/JSiC7qDJK7C0LPJnW+ixMS2nZiggruxWS2n4khEG+sw5YXXB3zBO+aYhoyDJQ+95f4X8ZrCdnVEUoLM05LuquEBZflNJPLJo4cOHBASfiC/sQJVGMppZyLWbPGJIca4cROeOdCToafngSKHHfNQ==',
+#                       'body': '[{"title": "SAVE $1.00 OFF TWO Starbucks Coffee 10 Ct. or 3.17-32 Oz.", "description": "SAVE $1.00 OFF TWO Starbucks Coffee 10 Ct. or 3.17-32 Oz.", "offer_gs1": "", "reward_amount": 5, "min_purchase_amount": 3, "manufactuer_id": 0, "coupon_category": 2, "start_date": "2023-01-26T00:00:00.000Z", "end_date": "2023-04-26T00:00:00.000Z", "shutoff_date": "2023-04-26T00:00:00.000Z", "clip_limit": 1, "redeem_limit": 0, "clip_limit_amount": 0, "redeem_limit_amount": 0, "coupon_type": 1, "reward_quantity": 0, "min_quantity": 2, "coupon_code": "", "is_flex": 1, "coupon_target_type_id": 2, "is_discount_percentage": 0, "max_reward_limit": 0, "limit_per_customer": 2, "addtional_details": " sdf", "disclaimer": " sdf", "image_1": "data:image/jpeg;base64,/9j/4QKqRXhpZgAASUkqAAgAAAAJAA8BAgAHAAAAegAAABABAgAOAAAAggAAABIBAwABAAAAAQAAABoBBQABAAAAkAAAABsBBQABAAAAmAAAACgBAwABAAAAAgAAADEBARQGeFAkfLQKXhQf/9k=", "image_1_thumbnail": "string", "media_url": "string", "brand_guid": "1CD7A6DE-8A9A-4C93-A621-DF0B6B39137A", "coupon_condition": {"per_customer_limit": 1, "per_transaction_limit": 1}, "wholesalers": [{"wholesaler_id": 5, "start_date": "2023-04-26T00:00:00.000Z", "end_date": "2023-05-26T00:00:00.000Z", "shutoff_date": "2023-05-26T00:00:00.000Z", "clip_limit": 1000000, "redeem_limit": 0, "retailer": []}], "upc": "12345"}, {"AuthData": {"UserID": 92, "first_name": "AWG", "username": "awg@rsaamerica.com", "scopes": "wholesaler:user"}}]', 'attributes': {'ApproximateReceiveCount': '1', 'SentTimestamp': '1683795095467', 'SenderId': 'AROA5HNOAAMDFCLJRUBMN:BQCoupons', 'ApproximateFirstReceiveTimestamp': '1683795095472'}, 'messageAttributes': {}, 'md5OfBody': '507a956b05bbc5cc4d3c4660b5665ac2', 'eventSource': 'aws:sqs', 'eventSourceARN': 'arn:aws:sqs:us-east-1:909287359238:bq-create-coupon', 'awsRegion': 'us-east-1'}]}
+# # records = event['Records']
+# # for input in records:
+# #     # print(input['body'])
+# #     body = input['body']
+# #     # print(body)
+# #     # data = json.loads(body)
+
+
+# def AddCoupon(event):  # sourcery no-metrics
+#     log.info(
+#         "------------------------Method Start - AddCoupon--------------------------")
+#     # body=event["body"]
+#     body = json.loads(event['body'])
+#     # print(body)
+#     IsWholesaler = 'wholesaler:user' in event['AuthData']['scopes']
+#     CreatedByWholesaler = 1 if IsWholesaler else 0
+#     # if all('all' not in brands['scopes'] for brands in event['AuthData']['brands']):
+#     #     log.info("User not a RSA Admin")
+#     #     if all('coupon:write' not in brands['scopes'] and 'flexcoupon:write' not in brands['scopes'] for brands in event['AuthData']['brands'] if brands['guid'] == body['brand_guid']):
+#     #         log.info("User not authorized to write coupon")
+#     #         return returnValue(403, "Access Denied")
+#     if not body["wholesalers"]:
+#         return returnValue(400, "Wholesaler list with wholesaler_guid is required")
+#     if not body["upc"]:
+#         return returnValue(400, "UPC list with upc_guid is required")
+
+#     print("Success")
+
+
+# FailedMsgIDs = []
+# records = event['Records']
+
+# for Input in records:
+#     if Input['eventSource'] != 'aws:sqs':
+#         log.error("not a sqs message")
+#         FailedMsgIDs.append(
+#             Input['messageId']) if 'messageId' in Input else None
+
+#     MsgID = Input['messageId']
 #     try:
-#         s3 = boto3.client('sqs')
-#         response = s3.send_message(
-#             QueueUrl=f"https://sqs.us-east-1.amazonaws.com/{AccID}/{QName}",
-#             MessageBody=json.dumps(Msg))
-#         log.info(response)
+#         body = json.loads(Input['body'])
+#         body_data = {}
+#         body_data['body'] = body[0]
+#         Authdata = body[1]['AuthData']
+#         body_data['AuthData'] = Authdata
 
 #     except Exception as e:
-#         log.info(e)
-#         return [False, f"{e}"]
-#     return [True, response['MessageId']]
+#         log.error(e)
+#         FailedMsgIDs.append(Input)
+#         continue
+#     try:
+#         data = AddCoupon(body_data)
+#         if data == False:
+#             log.error("Failed to create Coupon")
+#             FailedMsgIDs.append(MsgID)
+#             print(FailedMsgIDs)
+#             continue
+#     except Exception as e:
+#         log.error(e)
+#     print("failed")
