@@ -1,11 +1,28 @@
-# import phonenumbers
-# from phonenumbers import geocoder, timezone, carrier
+# weekDays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
-# phonenumber1 = phonenumbers.parse("+919966104006")
 
-# print(geocoder.description_for_number(phonenumber1, "en"))
-# print(timezone.time_zones_for_geographical_number(phonenumber1))
-# print(carrier.name_for_number(phonenumber1, "en"))
+# def convertToString(weekDays):
+#     string_a = "-".join(weekDays)
+#     return (string_a)
 
-msg = list(map(int, ("10", "20", "30", "40", "50")))
-print(msg)
+
+# print(convertToString(weekDays))
+from collections import Counter
+
+days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sun', 'mon', 'mon']
+length_of_days = len(days)
+# def findMaxOccuringString(days):
+# print(max(days, key=days.count))
+num = 0
+total = 0
+final_data = []
+for i in days:
+    for _ in range(length_of_days):
+        if i == days[num]:
+            total = total + 1
+            
+        object1 = {days[num]: total}
+    final_data += object1
+    num += 1
+    total = 0
+print(object1)
