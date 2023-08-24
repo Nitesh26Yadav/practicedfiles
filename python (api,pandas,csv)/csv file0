@@ -1,8 +1,26 @@
 import csv
+import pandas as pd
+import matplotlib.pyplot as plt
 
-with open('DeptTest.csv','r') as csv_file:
-    csv_reader = csv.reader(csv_file)
+# with open('C:\\Users\\rsa-l\\Desktop\\vs py code\\python (api,pandas,csv)\\DeptTest.csv', 'r') as csv_file:
+#     csv_reader = csv.reader(csv_file)
 
-    for line in csv_reader:
-        print(line)
-    
+#     for line in csv_reader:
+
+#         print(line)
+
+
+# using matplotlib in pandas.
+
+df1 = pd.read_csv(
+    'C:\\Users\\rsa-l\\Desktop\\vs py code\\python (api,pandas,csv)\\DeptTest.csv')
+
+# df.plot()
+
+# print(plt.show())
+
+df = df1
+
+df.plot(kind='scatter', x='Name', y="DepartmentID")
+
+plt.show()

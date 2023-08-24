@@ -24,3 +24,4 @@ ypoints = np.array([0, 250])
 
 plt.plot(xpoints, ypoints)
 plt.show()
+print(plt.show())
