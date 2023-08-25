@@ -65,3 +65,19 @@ client = boto3.client('lambda')
 #     FunctionName='RSA_dummy_lambda_func'
 # )
 # print(response)
+
+
+# def SendQMsg(Msg, QName):
+#     log.info(Msg)
+#     ID = str(os.environ.get('ID')) # always use in varibales do not use in code.
+#     try:
+#         s3 = boto3.client('sqs')
+#         response = s3.send_message(
+#             QueueUrl=f"https://sqs.us-east-1.amazonaws.com/{ID}/{QName}",
+#             MessageBody=json.dumps(Msg))
+#         log.info(response)
+
+#     except Exception as e:
+#         log.info(e)
+#         return [False, f"{e}"]
+#     return [True, response['MessageId']]
