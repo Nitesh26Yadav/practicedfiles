@@ -1,5 +1,6 @@
 # import requests
 # import os
+import numpy as np
 import json
 # conn = os.environ.get("API")
 # guid = 'F36DF97E-F80C-44C1-A64F-6BE5D07FD298'
@@ -146,3 +147,16 @@ import json
 #         else:
 #             return returnValue(400, "something went wrong.")
 #     return returnValue(200, data)
+import string
+import random
+letters = string.ascii_lowercase
+Numbers = string.digits
+# Random_Num = ''.join(random.choice(Numbers) for _ in range(24))
+# print(Random_Num)
+random_num = []
+for i in range(10):
+    random_num.append(''.join(random.choice(Numbers)))
+
+
+num = ''.join(random.choice(Numbers)for _ in range(10))
+print(num)

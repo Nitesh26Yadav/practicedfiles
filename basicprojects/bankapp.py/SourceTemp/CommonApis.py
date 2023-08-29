@@ -74,7 +74,6 @@ def AccessDBData(conn, query):
     cursor = conn.cursor(as_dict=True)
     log.info(f"-Running query - {query}")
     try:
-        # cursor.execute("update brand set name = 'McD' OUTPUT inserted.id where company_id = 2;")
         cursor.execute(f"{query};")
         row = cursor.fetchall()
         if cursor.rowcount > 0:
