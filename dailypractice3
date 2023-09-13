@@ -9,8 +9,6 @@
 # # query = f"exec ap_get_rule {guid}, {UID}"
 
 
-
-
 # # filterdata = []
 # # for x in query.split():
 # # 	if x == 'exec':
@@ -38,7 +36,7 @@
 
 # # print(type("'F36DF97E-F80C-44C1-A64F-6BE5D07FD298',1"))
 
-# def Accessdbdata(conn,query):  
+# def Accessdbdata(conn,query):
 
 # 	try:
 # 		filterdata = []
@@ -64,7 +62,7 @@
 # 		"Proc": proc_name,
 
 # 		"Args": args_name
-	
+
 # 		}
 # 		response = requests.post(conn,json = body)
 # 		# print(proc_name)
@@ -80,9 +78,6 @@
 # print(data)
 
 
-
-
-
 # 		# "Instance":"veritra",
 
 # 		# "DB":"RSA_CentMark",
@@ -90,7 +85,6 @@
 # 		# "Proc":"ap_get_rule",
 
 # 		# "Args":"F36DF97E-F80C-44C1-A64F-6BE5D07FD298, eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySUQiOjEwMSwiaXNfY29uc2VudF9wcm92aWRlZCI6dHJ1ZSwidXNlcm5hbWUiOiJkZW1vdXNlckBhdXRvcGlsb3QuY29tIiwidXNlcl9ndWlkIjoiN0UyOTExMDUtRDQyNy00QTRDLThGOEMtMUE5MUFCOUY3QTMzIiwiZmlyc3RfbmFtZSI6IkpvaG4iLCJsYXN0X25hbWUiOiJGYXJtcyIsInJldGFpbGVyIjp7ImlkIjo0OCwic2NvcGVzIjpbXX0sImV4cGlyZXNfaW4iOiIyMDIyLTAzLTA1IDE4OjQ3OjIzLjQyMjI2MCJ9.EhC9HR6vgi0dqmD24TpDpe4FEee1VT4p311zHACDk8k".split(',')
-
 
 
 # # response = requests.post(conn,json={
@@ -106,7 +100,6 @@
 # # })
 
 
-
 # # filterdata = ""
 
 # # for x in query.split():
@@ -119,7 +112,6 @@
 # # data1 = data.strip(",")
 
 # # print(data1)
-
 
 
 # # filterdata = []
@@ -276,3 +268,96 @@
 #                          body['schedule']['enddate'], body['schedule']['enddate'])
 
 # query = f"exec ap_update_rule '', {RemoveNonAscii(body['ruletype'])},'{RemoveNonAscii(body['name'])}', '{RemoveNonAscii(body['subruletype'])}', {body['nooffer']}, '{RemoveNonAscii(body['schedule']['frequency'])}','{dates['Start']}', '{dates['End']}', '{RemoveNonAscii(body['schedule']['email'])}', {body['schedule']['approvalrequired']}, {body['iselastic']}, {body['schedule']['notifyadminpostrun']},{body['schedule']['notifysuggestedoffers']}, {body['schedule']['groupstatsupdate']},{clientId}, '{clientGuid}', 1, {UID}"
+
+ajay = [
+    {
+        "countryname": "Canada",
+        "capitalname": "Ottawa",
+        "flagimage": "/flag/canada.gif"
+    },
+    {
+        "countryname": "China",
+        "capitalname": "Beijing",
+        "flagimage": "/flag/china.gif"
+    },
+    {
+        "countryname": "France",
+        "capitalname": "Paris",
+        "flagimage": "/flag/france.gif"
+    },
+    {
+        "countryname": "Germany",
+        "capitalname": "Berlin",
+        "flagimage": "/flag/germany.gif"
+    },
+    {
+        "countryname": "Hungary",
+        "capitalname": "Budapest",
+        "flagimage": "/flag/hungry.gif"
+    },
+    {
+        "countryname": "India",
+        "capitalname": "New Delhi",
+        "flagimage": "/flag/india.gif"
+    },
+    {
+        "countryname": "Indonesia",
+        "capitalname": "Jakarta",
+        "flagimage": "/flag/indonesia.gif"
+    },
+    {
+        "countryname": "Iran",
+        "capitalname": "Tehran",
+        "flagimage": "/flag/iran.gif"
+    },
+    {
+        "countryname": "Iraq",
+        "capitalname": "Baghdad",
+        "flagimage": "/flag/iraq.gif"
+    },
+    {
+        "countryname": "Bhutan",
+        "capitalname": "Thimphu",
+        "flagimage": "/flag/bhutan.gif"
+    },
+    {
+        "countryname": "Afghanistan",
+        "capitalname": "Kabul",
+        "flagimage": "/flag/afghanistan.gif"
+    },
+    {
+        "countryname": "Bangladesh",
+        "capitalname": "Dhaka",
+        "flagimage": "/flag/bangladesh.gif"
+    },
+    {
+        "countryname": "Japan",
+        "capitalname": "Tokyo",
+        "flagimage": "/flag/japan.gif"
+    },
+    {
+        "countryname": "Malaysia",
+        "capitalname": "Kuala Lumpur",
+        "flagimage": "/flag/malaysia.gif"
+    },
+    {
+        "countryname": "Mauritius",
+        "capitalname": "Port Louis",
+        "flagimage": "/flag/mauritius.gif"
+    },
+    {
+        "countryname": "Nepal",
+        "capitalname": "Kathmandu",
+        "flagimage": "/flag/nepal.gif"
+    },
+    {
+        "countryname": "Netherlands",
+        "capitalname": "Amsterdam",
+        "flagimage": "/flag/netherland.gif"
+    },
+    {
+        "countryname": "New Zealand",
+        "capitalname": "Wellington",
+        "flagimage": "/flag/newzealand.gif"
+    }
+]
